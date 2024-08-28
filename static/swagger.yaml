@@ -1,0 +1,559 @@
+openapi: 3.0.0
+info:
+  title: User Management API
+  description: API for managing users, user details, user calendars, reference calendars, and subscriptions.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:5000
+    description: Development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        profile_picture:
+          type: string
+        is_google_login:
+          type: boolean
+        is_admin:
+          type: boolean
+        role_id:
+          type: integer
+
+    UserDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        sex:
+          type: string
+        pronouns:
+          type: string
+        due_date:
+          type: string
+          format: date
+        first_pregnancy:
+          type: boolean
+        phone:
+          type: string
+        can_receive_texts:
+          type: boolean
+        user_id:
+          type: integer
+
+    UserCalendar:
+      type: object
+      properties:
+        id:
+          type: integer
+        event_date:
+          type: string
+          format: date
+        description:
+          type: string
+        user_id:
+          type: integer
+
+    ReferenceCalendar:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        day_of_pregnancy:
+          type: integer
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        newsletter_subscribed:
+          type: boolean
+        text_subscribed:
+          type: boolean
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+
+security:
+  - BearerAuth: []
+
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Invalid input
+
+  /login:
+    post:
+      summary: Login a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        401:
+          description: Invalid credentials
+
+  /login/google:
+    get:
+      summary: Google OAuth Login
+      description: Redirects the user to Google for OAuth authentication
+      responses:
+        302:
+          description: Redirect to Google OAuth
+
+  /login/google/callback:
+    get:
+      summary: Google OAuth Callback
+      description: Handles the Google OAuth callback, processes the user info, and issues a JWT token
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        400:
+          description: Invalid Google OAuth callback
+
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: User not found
+    put:
+      summary: Update user's first and last name
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+      responses:
+        200:
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: User not found
+
+  /users/{id}/admin:
+    put:
+      summary: Update user to admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User updated to admin
+        404:
+          description: User not found
+
+  /user-details/{user_id}:
+    get:
+      summary: Get user details by user ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+        404:
+          description: User details not found
+    post:
+      summary: Create user details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+      responses:
+        201:
+          description: User details created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+        400:
+          description: Invalid input
+    put:
+      summary: Update user details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+      responses:
+        200:
+          description: User details updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+        404:
+          description: User details not found
+
+  /user-calendar/{user_id}:
+    get:
+      summary: Get user calendar by user ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User calendar retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserCalendar'
+        404:
+          description: No calendar events found for this user
+
+  /user-calendar/{user_id}/custom:
+    post:
+      summary: Add custom event to user calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_date:
+                  type: string
+                  format: date
+                description:
+                  type: string
+      responses:
+        201:
+          description: Custom event added to calendar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCalendar'
+        400:
+          description: Invalid input
+
+  /user-calendar/{event_id}:
+    put:
+      summary: Update custom event in user calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_date:
+                  type: string
+                  format: date
+                description:
+                  type: string
+      responses:
+        200:
+          description: Custom event updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCalendar'
+        404:
+          description: Custom event not found
+
+    delete:
+      summary: Delete custom event from user calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Custom event deleted
+        404:
+          description: Custom event not found
+
+  /reference-calendar:
+    get:
+      summary: Get all reference calendar events
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: List of reference calendar events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferenceCalendar'
+
+    post:
+      summary: Create a new reference calendar event
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReferenceCalendar'
+      responses:
+        201:
+          description: Reference calendar event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCalendar'
+        400:
+          description: Invalid input
+
+  /reference-calendar/{event_id}:
+    get:
+      summary: Get reference calendar event by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Reference calendar event retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCalendar'
+        404:
+          description: Reference calendar event not found
+
+    put:
+      summary: Update reference calendar event
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReferenceCalendar'
+      responses:
+        200:
+          description: Reference calendar event updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCalendar'
+        404:
+          description: Reference calendar event not found
+
+    delete:
+      summary: Delete reference calendar event
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Reference calendar event deleted
+        404:
+          description: Reference calendar event not found
+
+  /subscriptions:
+    post:
+      summary: Subscribe or unsubscribe user to newsletter and texts
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        201:
+          description: Subscription status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        400:
+          description: Invalid input
+
+  /subscriptions/{user_id}:
+    get:
+      summary: Get subscription status for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Subscription status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        404:
+          description: Subscription status not found
