@@ -1,13 +1,12 @@
-from database import db, Base
-from sqlalchemy.orm import Mapped, mapped_column
+from database import db
 
-class ReferenceCalendar(Base):
+class ReferenceCalendar(db.Model):
     __tablename__ = 'reference_calendar'
     
-    id: Mapped[int] = mapped_column(db.Integer, primary_key=True)
-    day: Mapped[int] = mapped_column(db.Integer, nullable=False)
-    activity: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    day_of_pregnancy = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.String(255), nullable=False)  # Make sure this line exists
     
-    def __init__(self, day, activity):
-        self.day = day
-        self.activity = activity
+    def __init__(self, day_of_pregnancy, description):
+        self.day_of_pregnancy = day_of_pregnancy
+        self.description = description

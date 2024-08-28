@@ -11,6 +11,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from routes.user_subscription_routes import user_subscription_bp
 from routes.reference_calendar_routes import reference_calendar_bp
 from routes.user_calendar_routes import user_calendar_bp
+from routes import reference_calendar_routes
 from utils.util import encode_token
 import os
 
@@ -39,7 +40,7 @@ def blueprint_config(app):
     app.register_blueprint(swagger_blueprint, url_prefix=SWAGGER_URL)
     app.register_blueprint(user_details_bp)
     app.register_blueprint(user_subscription_bp)
-    app.register_blueprint(reference_calendar_bp)
+    app.register_blueprint(reference_calendar_routes.reference_calendar_bp)
     app.register_blueprint(user_calendar_bp)
 
 app = create_app()
@@ -52,55 +53,6 @@ def google_login():
     session['nonce'] = nonce  # Store the nonce in the session
     redirect_uri = url_for('google_auth_callback', _external=True)
     return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
-
-# @app.route('/login/google/callback')
-# def google_auth_callback():
-#     token = oauth.google.authorize_access_token()
-
-#     # Retrieve the nonce from the session
-#     nonce = session.pop('nonce', None)
-#     if nonce is None:
-#         return "Nonce is missing from the session.", 400
-
-#     # Parse the ID token and verify the nonce
-#     user_info = oauth.google.parse_id_token(token, nonce=nonce)
-
-#     # Handle user information and session management here
-#     validated_user = {
-#         'email': user_info.get('email'),
-#         'first_name': user_info.get('given_name', ''),  # Use .get() to avoid KeyError
-#         'last_name': user_info.get('family_name', ''),  # Use .get() to avoid KeyError
-#         'profile_picture': user_info.get('picture', '')  # Use .get() to avoid KeyError
-#     }
-
-#     # Check if the user exists in the database
-#     user = db.session.query(User).filter_by(email=validated_user['email']).first()
-    
-#     if user is None:
-#         # If the user doesn't exist, create a new user record
-#         user = User(
-#             email=validated_user['email'],
-#             first_name=validated_user['first_name'],
-#             last_name=validated_user['last_name'],
-#             profile_picture=validated_user['profile_picture'],
-#             is_google_login=True  # Mark this user as a Google login user
-#         )
-#         db.session.add(user)
-#         db.session.commit()
-
-#     # Store the user information in the session
-#     session['user_id'] = user.id
-#     session['user_name'] = user.first_name
-    
-#     flash('Logged in successfully!', 'success')
-#     return redirect(url_for('dashboard'))
-
-# @app.route('/dashboard')
-# def dashboard():
-#     if 'user_id' not in session:
-#         return redirect(url_for('index'))
-    
-#     return f"Welcome, {session['user_name']}! This is your dashboard."
 
 @app.route('/login/google/callback')
 def google_auth_callback():
@@ -169,8 +121,8 @@ if __name__ == '__main__':
             from models.user_calendar import UserCalendar
 
             # Logging SQLAlchemy engine
-            logging.basicConfig()
-            logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+            # logging.basicConfig()
+            # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
             # Drop all tables and recreate them
             db.drop_all()
@@ -178,6 +130,13 @@ if __name__ == '__main__':
             db.create_all()
             db.session.commit()
             print("Tables created successfully")
+
+            # Print all registered routes
+            print("\nRegistered Routes:")
+            for rule in app.url_map.iter_rules():
+                print(f"{rule.endpoint}: {rule.rule}")
+            print()
+
         except Exception as e:
             print(f"An error occurred: {e}")
 
