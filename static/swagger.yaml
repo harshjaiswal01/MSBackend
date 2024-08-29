@@ -1,55 +1,52 @@
 openapi: 3.0.0
 info:
   title: User Management API
-  description: API documentation for the User Management system.
   version: 1.0.0
+  description: API for managing users, user details, subscriptions, vision boards, and content items.
+
 servers:
   - url: http://localhost:5000
     description: Local server
+
 tags:
-  - name: User
-    description: Operations related to users
-  - name: Google OAuth
-    description: Operations related to Google OAuth
+  - name: Users
+    description: Operations related to user management
   - name: User Details
     description: Operations related to user details
   - name: Subscriptions
     description: Operations related to user subscriptions
-  - name: Reference Calendar
-    description: Operations related to the reference calendar
-  - name: User Calendar
-    description: Operations related to the user calendar
+  - name: Vision Boards
+    description: Operations related to vision boards
+  - name: Content Items
+    description: Operations related to content items within vision boards
+  - name: Calendar
+    description: Operations related to the user and reference calendars
+  - name: Questionnaire
+    description: Operations related to user questionnaires
+
 paths:
   /register:
     post:
       tags:
-        - User
+        - Users
       summary: Register a new user
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-                first_name:
-                  type: string
-                last_name:
-                  type: string
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: User registered successfully
         '400':
           description: Bad request
+
   /login:
     post:
       tags:
-        - User
-      summary: Log in a user
+        - Users
+      summary: User login
       requestBody:
         required: true
         content:
@@ -63,41 +60,17 @@ paths:
                   type: string
       responses:
         '200':
-          description: User logged in successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                  first_name:
-                    type: string
-                  last_name:
-                    type: string
+          description: Login successful, returns a token and user information
         '401':
           description: Unauthorized
-  /login/google:
-    get:
-      tags:
-        - Google OAuth
-      summary: Initiate Google OAuth login
-      responses:
-        '302':
-          description: Redirect to Google for OAuth
-  /login/google/callback:
-    get:
-      tags:
-        - Google OAuth
-      summary: Google OAuth callback
-      responses:
-        '302':
-          description: Redirect after successful OAuth
+
   /users/{id}:
     get:
       tags:
-        - User
-      summary: Get user details by ID
+        - Users
+      summary: Get user by ID
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -106,13 +79,36 @@ paths:
             type: integer
       responses:
         '200':
-          description: User details retrieved successfully
+          description: User details
         '404':
           description: User not found
+
+  /users/{id}/admin:
     put:
       tags:
-        - User
-      summary: Update user details by ID
+        - Users
+      summary: Update a user to admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User updated to admin
+        '404':
+          description: User not found
+
+  /users/{id}/update-name:
+    put:
+      tags:
+        - Users
+      summary: Update user's first and last name
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -132,14 +128,35 @@ paths:
                   type: string
       responses:
         '200':
-          description: User updated successfully
+          description: User name updated successfully
+        '404':
+          description: User not found
+  /user_details:
+    post:
+      tags:
+        - User Details
+      summary: Create user details
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
+      responses:
+        '201':
+          description: User details created successfully
         '400':
           description: Bad request
-  /users/{id}/admin:
-    put:
+
+  /user_details/{id}:
+    get:
       tags:
-        - User
-      summary: Update a user to admin
+        - User Details
+      summary: Get user details by ID
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -148,29 +165,41 @@ paths:
             type: integer
       responses:
         '200':
-          description: User updated to admin successfully
-        '400':
-          description: Bad request
-  /user-details/{user_id}:
-    get:
+          description: User details
+        '404':
+          description: User details not found
+
+    put:
       tags:
         - User Details
-      summary: Get user details by user ID
+      summary: Update user details by ID
+      security:
+        - BearerAuth: []
       parameters:
-        - name: user_id
+        - name: id
           in: path
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDetails'
       responses:
         '200':
-          description: User details retrieved successfully
+          description: User details updated successfully
         '404':
-          description: User not found
-    post:
+          description: User details not found
+
+  /users/{user_id}/subscriptions:
+    put:
       tags:
-        - User Details
-      summary: Add or update user details
+        - Subscriptions
+      summary: Update user subscription preferences
+      security:
+        - BearerAuth: []
       parameters:
         - name: user_id
           in: path
@@ -182,101 +211,246 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                sex:
-                  type: string
-                pronouns:
-                  type: string
-                due_date:
-                  type: string
-                  format: date
-                first_pregnancy:
-                  type: boolean
-                phone_number:
-                  type: string
-                can_receive_texts:
-                  type: boolean
-      responses:
-        '200':
-          description: User details added or updated successfully
-        '400':
-          description: Bad request
-  /subscriptions/{user_id}:
-    get:
-      tags:
-        - Subscriptions
-      summary: Get subscription status for a user
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Subscription status retrieved successfully
-        '404':
-          description: User not found
-    post:
-      tags:
-        - Subscriptions
-      summary: Subscribe or unsubscribe a user
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                subscribe_newsletter:
-                  type: boolean
-                subscribe_texts:
-                  type: boolean
+              $ref: '#/components/schemas/Subscription'
       responses:
         '200':
           description: Subscription updated successfully
+        '404':
+          description: User not found
+  /vision-boards:
+    post:
+      tags:
+        - Vision Boards
+      summary: Create a vision board
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisionBoard'
+      responses:
+        '201':
+          description: Vision board created successfully
         '400':
           description: Bad request
+
+  /vision-boards/{vision_board_id}:
+    get:
+      tags:
+        - Vision Boards
+      summary: Get a vision board by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Vision board details
+        '404':
+          description: Vision board not found
+
+    put:
+      tags:
+        - Vision Boards
+      summary: Update a vision board by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisionBoard'
+      responses:
+        '200':
+          description: Vision board updated successfully
+        '404':
+          description: Vision board not found
+
+    delete:
+      tags:
+        - Vision Boards
+      summary: Delete a vision board by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Vision board deleted successfully
+        '404':
+          description: Vision board not found
+
+  /users/{user_id}/vision-boards:
+    get:
+      tags:
+        - Vision Boards
+      summary: Get all vision boards for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of vision boards
+        '404':
+          description: User not found
+
+    post:
+      tags:
+        - Vision Boards
+      summary: Add a vision board to a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserVisionBoard'
+      responses:
+        '201':
+          description: Vision board added to user
+        '404':
+          description: User not found
+
+  /vision-boards/{vision_board_id}/content:
+    post:
+      tags:
+        - Content Items
+      summary: Add a content item to a vision board
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentItem'
+      responses:
+        '201':
+          description: Content item added to vision board
+        '400':
+          description: Bad request
+
+  /vision-boards/content/{content_item_id}:
+    put:
+      tags:
+        - Content Items
+      summary: Update a content item in a vision board
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: content_item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentItem'
+      responses:
+        '200':
+          description: Content item updated successfully
+        '404':
+          description: Content item not found
+
+    delete:
+      tags:
+        - Content Items
+      summary: Delete a content item from a vision board
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: content_item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Content item deleted successfully
+        '404':
+          description: Content item not found
   /reference_calendar:
     post:
       tags:
-        - Reference Calendar
-      summary: Create a new reference calendar event
+        - Calendar
+      summary: Create a reference calendar entry
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                day_of_pregnancy:
-                  type: integer
-                description:
-                  type: string
+              $ref: '#/components/schemas/ReferenceCalendar'
       responses:
         '201':
-          description: Reference calendar event created successfully
+          description: Reference calendar entry created
         '400':
           description: Bad request
+
+  /reference_calendar/{id}:
     get:
       tags:
-        - Reference Calendar
-      summary: Get all reference calendar events
+        - Calendar
+      summary: Get a reference calendar entry by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
-          description: Reference calendar events retrieved successfully
-  /reference_calendar/{id}:
+          description: Reference calendar entry details
+        '404':
+          description: Reference calendar entry not found
+
     put:
       tags:
-        - Reference Calendar
-      summary: Update a reference calendar event
+        - Calendar
+      summary: Update a reference calendar entry by ID
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -288,21 +462,19 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                day_of_pregnancy:
-                  type: integer
-                description:
-                  type: string
+              $ref: '#/components/schemas/ReferenceCalendar'
       responses:
         '200':
-          description: Reference calendar event updated successfully
-        '400':
-          description: Bad request
+          description: Reference calendar entry updated
+        '404':
+          description: Reference calendar entry not found
+
     delete:
       tags:
-        - Reference Calendar
-      summary: Delete a reference calendar event
+        - Calendar
+      summary: Delete a reference calendar entry by ID
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -311,14 +483,17 @@ paths:
             type: integer
       responses:
         '200':
-          description: Reference calendar event deleted successfully
+          description: Reference calendar entry deleted
         '404':
-          description: Event not found
+          description: Reference calendar entry not found
+
   /users/{user_id}/calendar:
     get:
       tags:
-        - User Calendar
-      summary: Get user calendar events
+        - Calendar
+      summary: Get all calendar events for a user
+      security:
+        - BearerAuth: []
       parameters:
         - name: user_id
           in: path
@@ -327,14 +502,17 @@ paths:
             type: integer
       responses:
         '200':
-          description: User calendar events retrieved successfully
+          description: List of calendar events
         '404':
-          description: User calendar not found
+          description: No calendar events found for this user
+
   /users/{user_id}/calendar/custom:
     post:
       tags:
-        - User Calendar
-      summary: Add a custom event to user calendar
+        - Calendar
+      summary: Add a custom event to the user's calendar
+      security:
+        - BearerAuth: []
       parameters:
         - name: user_id
           in: path
@@ -346,24 +524,27 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                event_date:
-                  type: string
-                  format: date
-                description:
-                  type: string
+              $ref: '#/components/schemas/UserCalendarEvent'
       responses:
         '201':
-          description: Custom event added successfully
+          description: Custom event added to calendar
         '400':
           description: Bad request
+
+  /users/{user_id}/calendar/custom/{event_id}:
     put:
       tags:
-        - User Calendar
-      summary: Update a custom event in the user calendar
+        - Calendar
+      summary: Update a custom event in the user's calendar
+      security:
+        - BearerAuth: []
       parameters:
         - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: event_id
           in: path
           required: true
           schema:
@@ -373,24 +554,26 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                event_date:
-                  type: string
-                  format: date
-                description:
-                  type: string
+              $ref: '#/components/schemas/UserCalendarEvent'
       responses:
         '200':
           description: Custom event updated successfully
         '404':
-          description: Event not found
+          description: Custom event not found
+
     delete:
       tags:
-        - User Calendar
-      summary: Delete a custom event from the user calendar
+        - Calendar
+      summary: Delete a custom event from the user's calendar
+      security:
+        - BearerAuth: []
       parameters:
         - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: event_id
           in: path
           required: true
           schema:
@@ -399,13 +582,48 @@ paths:
         '200':
           description: Custom event deleted successfully
         '404':
-          description: Event not found
+          description: Custom event not found
+
+  /questionnaire:
+    get:
+      tags:
+        - Questionnaire
+      summary: Get available vision boards for questionnaire
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of available vision boards
+
+  /questionnaire/submit:
+    post:
+      tags:
+        - Questionnaire
+      summary: Submit selected vision boards
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                selected_vision_boards:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Vision boards submitted successfully
+
 components:
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
   schemas:
     User:
       type: object
@@ -414,15 +632,18 @@ components:
           type: integer
         email:
           type: string
+        password:
+          type: string
         first_name:
           type: string
         last_name:
           type: string
-        is_admin:
-          type: boolean
+
     UserDetails:
       type: object
       properties:
+        id:
+          type: integer
         sex:
           type: string
         pronouns:
@@ -432,10 +653,54 @@ components:
           format: date
         first_pregnancy:
           type: boolean
-        phone_number:
+        phone:
           type: string
         can_receive_texts:
           type: boolean
+
+    Subscription:
+      type: object
+      properties:
+        newsletter:
+          type: boolean
+        sms_notifications:
+          type: boolean
+
+    VisionBoard:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        created_by_admin:
+          type: boolean
+
+    UserVisionBoard:
+      type: object
+      properties:
+        vision_board_id:
+          type: integer
+
+    ContentItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        date_created:
+          type: string
+          format: date
+        main_image:
+          type: string
+
     ReferenceCalendar:
       type: object
       properties:
@@ -445,7 +710,8 @@ components:
           type: integer
         description:
           type: string
-    UserCalendar:
+
+    UserCalendarEvent:
       type: object
       properties:
         id:

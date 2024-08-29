@@ -11,6 +11,9 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from routes.user_subscription_routes import user_subscription_bp
 from routes.reference_calendar_routes import reference_calendar_bp
 from routes.user_calendar_routes import user_calendar_bp
+from routes.vision_board_routes import vision_board_bp
+from routes.content_item_routes import content_item_bp
+from routes.questionnaire_routes import questionnaire_bp
 from routes import reference_calendar_routes
 from utils.util import encode_token
 import os
@@ -42,6 +45,9 @@ def blueprint_config(app):
     app.register_blueprint(user_subscription_bp)
     app.register_blueprint(reference_calendar_routes.reference_calendar_bp)
     app.register_blueprint(user_calendar_bp)
+    app.register_blueprint(vision_board_bp)
+    app.register_blueprint(content_item_bp)
+    app.register_blueprint(questionnaire_bp)
 
 app = create_app()
 blueprint_config(app)
@@ -119,6 +125,9 @@ if __name__ == '__main__':
             from models.user_subscription import UserSubscription
             from models.reference_calendar import ReferenceCalendar
             from models.user_calendar import UserCalendar
+            from models.content_item import ContentItem
+            from models.vision_board import VisionBoard
+            from models.user_vision_board import UserVisionBoard
 
             # Logging SQLAlchemy engine
             # logging.basicConfig()
