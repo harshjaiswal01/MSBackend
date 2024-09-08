@@ -41,7 +41,12 @@ def register_user(user_data):
     db.session.add(new_user)
     db.session.commit()
 
-    return user_schema.dump(new_user), None
+    # Generate a token for the newly created user
+    token = encode_token(new_user.id, new_user.is_admin)
+
+    return {"user": user_schema.dump(new_user), "token": token}, None
+
+    # return user_schema.dump(new_user), None
 
 # def login_user(credentials):
 #     try:
