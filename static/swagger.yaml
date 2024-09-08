@@ -231,6 +231,70 @@ paths:
           description: User details created successfully
         '400':
           description: Bad request
+    put:
+      tags:
+        - User Details
+      summary: Update user details
+      description: Update the details of the user by providing the details data. The user is identified through the authentication token.
+      operationId: updateUserDetails
+      requestBody:
+        description: Data for updating user details
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sex:
+                  type: string
+                  example: Male
+                pronouns:
+                  type: string
+                  example: He/Him
+                due_date:
+                  type: string
+                  format: date
+                  example: 2024-09-01
+                first_pregnancy:
+                  type: boolean
+                  example: true
+                phone:
+                  type: string
+                  example: "+1234567890"
+                can_receive_texts:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Successfully updated user details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User details updated successfully
+        '400':
+          description: Bad request. Invalid data provided.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No input data provided
+        '401':
+          description: Unauthorized. Invalid or missing token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
 
   /user_details/{id}:
     get:
@@ -248,30 +312,6 @@ paths:
       responses:
         '200':
           description: User details
-        '404':
-          description: User details not found
-
-    put:
-      tags:
-        - User Details
-      summary: Update user details by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserDetails'
-      responses:
-        '200':
-          description: User details updated successfully
         '404':
           description: User details not found
 
