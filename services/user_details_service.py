@@ -45,7 +45,7 @@ def create_user_details(user_id, details_data):
 
         # Create the user details object with the associated user_id
         user_details = UserDetails(
-            user_id=user_id,
+            # user_id=user_id,
             sex=sex,
             pronouns=pronouns,
             due_date=due_date,
@@ -54,6 +54,7 @@ def create_user_details(user_id, details_data):
             can_receive_texts=can_receive_texts
         )
 
+        user_details.user_id = user_id
         # Save the user details to the database
         db.session.add(user_details)
         db.session.commit()
