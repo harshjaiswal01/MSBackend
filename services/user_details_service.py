@@ -50,7 +50,7 @@ def create_user_details(user_id, details_data):
             pronouns=pronouns,
             due_date=due_date,
             first_pregnancy=first_pregnancy,
-            phone=phone,
+            phone_number=phone,
             can_receive_texts=can_receive_texts
         )
 
