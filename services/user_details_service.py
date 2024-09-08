@@ -12,26 +12,55 @@ def get_user_details(user_id):
         return None, {"error": "User details not found"}
     return user_details_schema.dump(user_details), None
 
+# def create_user_details(user_id, details_data):
+#     """
+#     Create user details for a user.
+#     """
+#     user_details = UserDetails(
+#         user_id=user_id,
+#         sex=details_data['sex'],
+#         pronouns=details_data['pronouns'],
+#         due_date=details_data.get('due_date'),
+#         first_pregnancy=details_data.get('first_pregnancy', False),
+#         phone=details_data.get('phone'),
+#         can_receive_texts=details_data.get('can_receive_texts', False)
+#     )
+#     db.session.add(user_details)
+#     db.session.commit()
+
+#     # Trigger calendar recalculation
+#     update_user_calendar_on_due_date_change(user_id)
+
+#     return user_details_schema.dump(user_details), None
+
 def create_user_details(user_id, details_data):
-    """
-    Create user details for a user.
-    """
-    user_details = UserDetails(
-        user_id=user_id,
-        sex=details_data['sex'],
-        pronouns=details_data['pronouns'],
-        due_date=details_data.get('due_date'),
-        first_pregnancy=details_data.get('first_pregnancy', False),
-        phone=details_data.get('phone'),
-        can_receive_texts=details_data.get('can_receive_texts', False)
-    )
-    db.session.add(user_details)
-    db.session.commit()
+    try:
+        # Extract fields from details_data
+        sex = details_data.get('sex')
+        pronouns = details_data.get('pronouns')
+        due_date = details_data.get('due_date')
+        first_pregnancy = details_data.get('first_pregnancy')
+        phone = details_data.get('phone')
+        can_receive_texts = details_data.get('can_receive_texts')
 
-    # Trigger calendar recalculation
-    update_user_calendar_on_due_date_change(user_id)
+        # Create the user details object with the associated user_id
+        user_details = UserDetails(
+            user_id=user_id,
+            sex=sex,
+            pronouns=pronouns,
+            due_date=due_date,
+            first_pregnancy=first_pregnancy,
+            phone=phone,
+            can_receive_texts=can_receive_texts
+        )
 
-    return user_details_schema.dump(user_details), None
+        # Save the user details to the database
+        db.session.add(user_details)
+        db.session.commit()
+
+        return user_details_schema.dump(user_details), None
+    except Exception as e:
+        return None, {"error": str(e)}
 
 def update_user_details(user_id, details_data):
     """
