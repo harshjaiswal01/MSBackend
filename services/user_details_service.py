@@ -51,7 +51,7 @@ def create_user_details(user_id, details_data):
             due_date=due_date,
             first_pregnancy=first_pregnancy,
             phone_number=phone,
-            can_receive_texts=can_receive_texts
+            can_receive_text=can_receive_texts
         )
 
         user_details.user_id = user_id
