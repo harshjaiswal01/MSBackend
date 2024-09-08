@@ -5,7 +5,10 @@ from utils.util import token_required
 @token_required
 def create_user_details():
     data = request.json
-    user_details, error = user_details_service.create_user_details(data)
+    if not data:
+        return jsonify({'message': 'No input data provided'}), 400
+    
+    user_details, error = user_details_service.create_user_details(details_data=data)
     if error:
         return jsonify(error), 400
     return jsonify(user_details), 201
