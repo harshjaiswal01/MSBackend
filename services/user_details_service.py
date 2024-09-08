@@ -58,6 +58,8 @@ def create_user_details(user_id, details_data):
         db.session.add(user_details)
         db.session.commit()
 
+        update_user_calendar_on_due_date_change(user_id)
+
         return user_details_schema.dump(user_details), None
     except Exception as e:
         return None, {"error": str(e)}
