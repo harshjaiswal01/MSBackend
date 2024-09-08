@@ -50,7 +50,7 @@ def token_required(f):
         if not user_id:
             return jsonify({'message': 'Token is invalid!'}), 401
 
-        return f(*args, **kwargs)
+        return f(user_id=user_id, *args, **kwargs)
     return decorated
 
 def admin_required(f):
