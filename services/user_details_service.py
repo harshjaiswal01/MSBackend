@@ -78,8 +78,8 @@ def update_user_details(user_id, details_data):
     user_details.pronouns = details_data.get('pronouns', user_details.pronouns)
     user_details.due_date = details_data.get('due_date', user_details.due_date)
     user_details.first_pregnancy = details_data.get('first_pregnancy', user_details.first_pregnancy)
-    user_details.phone = details_data.get('phone', user_details.phone)
-    user_details.can_receive_texts = details_data.get('can_receive_texts', user_details.can_receive_texts)
+    user_details.phone_number = details_data.get('phone', user_details.phone)
+    user_details.can_receive_text = details_data.get('can_receive_texts', user_details.can_receive_texts)
 
     db.session.commit()
 

@@ -15,16 +15,16 @@ def create_user_details(user_id):
     return jsonify(user_details), 201
 
 @token_required
-def update_user_details(id):
+def update_user_details(user_id):
     data = request.json
-    user_details, error = user_details_service.update_user_details(id, data)
+    user_details, error = user_details_service.update_user_details(user_id=user_id, data)
     if error:
         return jsonify(error), 400
     return jsonify(user_details), 200
 
 @token_required
-def get_user_details(id):
-    user_details, error = user_details_service.get_user_details(id)
+def get_user_details(user_id):
+    user_details, error = user_details_service.get_user_details(user_id=user_id)
     if error:
         return jsonify(error), 404
     return jsonify(user_details), 200
