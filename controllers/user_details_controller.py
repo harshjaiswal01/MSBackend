@@ -3,8 +3,8 @@ from services import user_details_service
 from utils.util import token_required
 
 @token_required
-def create_user_details():
-    user_id = request.user_id
+def create_user_details(user_id):
+    # user_id = request.user_id
     data = request.json
     if not data:
         return jsonify({'message': 'No input data provided'}), 400
