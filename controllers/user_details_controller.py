@@ -8,7 +8,7 @@ def create_user_details():
     if not data:
         return jsonify({'message': 'No input data provided'}), 400
     
-    user_details, error = user_details_service.create_user_details(details_data=data)
+    user_details, error = user_details_service.create_user_details(user_id=user_id, details_data=data)
     if error:
         return jsonify(error), 400
     return jsonify(user_details), 201
