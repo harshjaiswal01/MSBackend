@@ -142,12 +142,18 @@ def export_calendar_to_ics(user_id):
             try:
                 # Convert event_date to datetime object
                 event_date = datetime.strptime(event.get('event_date'), "%Y-%m-%d")
-                
+
                 # Ensure the event has required fields
                 if event.get('title') and event_date:
                     ical_event = Event()
                     ical_event.add('summary', event.get('title'))  # Title as 'summary'
                     ical_event.add('dtstart', event_date)  # Start date
+
+                    # Generate a unique identifier (UID) for the event
+                    ical_event.add('uid', str(uuid.uuid4()) + '@MelanatedSanctuary')
+
+                    # Add a DTSTAMP (current timestamp for the event creation time)
+                    ical_event.add('dtstamp', datetime.utcnow())
 
                     if event.get('description'):
                         ical_event.add('description', event.get('description'))  # Description
