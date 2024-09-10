@@ -135,8 +135,8 @@ if __name__ == '__main__':
             # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
             # Drop all tables and recreate them
-            db.drop_all()
-            db.session.commit()
+            # db.drop_all()
+            # db.session.commit()
             db.create_all()
             db.session.commit()
             print("Tables created successfully")

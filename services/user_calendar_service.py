@@ -4,6 +4,8 @@ from models.user_calendar import UserCalendar
 from models.reference_calendar import ReferenceCalendar
 from models.user_details import UserDetails
 from models.schemas.user_calendar_schema import user_calendar_schema, user_calendars_schema
+from icalendar import Calendar, Event
+import io
 
 def calculate_trimesters(due_date):
     """
@@ -117,3 +119,33 @@ def update_event_location(event_id, location):
     event.location = location
     db.session.commit()
     return user_calendar_schema.dump(event), None
+
+def export_calendar_to_ics(user_id):
+    """
+    Export user's calendar events as an iCalendar (.ics) format.
+    """
+    # Get all calendar events for the user
+    events = get_user_calendar(user_id)
+
+    # Create an iCalendar object
+    cal = Calendar()
+    cal.add('prodid', '-//My Calendar App//mxm.dk//')
+    cal.add('version', '2.0')
+
+    # Add each event to the iCalendar object
+    for event in events:
+        ical_event = Event()
+        ical_event.add('summary', event.title)
+        ical_event.add('dtstart', event.event_date)  # Using your existing event_date field
+        ical_event.add('description', event.description)
+        ical_event.add('location', event.location)
+
+        # Add the event to the calendar
+        cal.add_component(ical_event)
+
+    # Convert calendar to string (ICS format)
+    ics_file = io.BytesIO()
+    ics_file.write(cal.to_ical())
+    ics_file.seek(0)
+
+    return ics_file

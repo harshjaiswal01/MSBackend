@@ -1149,6 +1149,41 @@ paths:
                   error:
                     type: string
                     example: "Error updating location"
+  /calendar/export:
+    get:
+      summary: Export user calendar in iCalendar format
+      description: Exports the user calendar as an iCalendar (.ics) file for syncing with Google or Apple calendars.
+      security:
+        - bearerAuth: []  # Assuming you're using JWT or OAuth for authentication
+      responses:
+        '200':
+          description: Calendar exported successfully
+          content:
+            text/calendar:
+              schema:
+                type: string
+                format: binary
+                example: "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//My Calendar App//mxm.dk//\n..."
+        '401':
+          description: Unauthorized - Authentication is required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
 
   /reference_calendar:
     get:

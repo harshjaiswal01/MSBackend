@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from services import user_calendar_service
 from utils.util import token_required
 
@@ -39,3 +39,23 @@ def update_event_location(user_id, event_id):
     if error:
         return jsonify(error), 400
     return jsonify(event), 200
+
+@token_required
+def export_user_calendar(user_id):
+    """
+    Export user calendar events as an iCalendar (.ics) file.
+    """
+    try:
+        # Call the service to generate the ICS file
+        ics_file = user_calendar_service.export_calendar_to_ics(user_id)
+        
+        # Return the ICS file as a response
+        return Response(
+            ics_file,
+            mimetype='text/calendar',
+            headers={
+                'Content-Disposition': 'attachment; filename=user_calendar.ics'
+            }
+        )
+    except Exception as e:
+        return {"error": str(e)}, 500
