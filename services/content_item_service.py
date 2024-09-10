@@ -9,6 +9,8 @@ from datetime import datetime
 import yt_dlp
 from config import DevelopmentConfig
 
+YOUTUBE_API_KEY = DevelopmentConfig.YOUTUBE_API_KEY
+
 def fetch_metadata(content_url):
     # If the URL is from YouTube, use yt-dlp to extract metadata
     if "youtube.com" in content_url or "youtu.be" in content_url:
