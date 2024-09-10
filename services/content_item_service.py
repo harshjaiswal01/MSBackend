@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import yt_dlp
 from config import DevelopmentConfig
+from slugify import slugify
+import random
 
 YOUTUBE_API_KEY = DevelopmentConfig.YOUTUBE_API_KEY
 
