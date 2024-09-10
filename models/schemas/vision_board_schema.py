@@ -4,6 +4,7 @@ class VisionBoardSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(required=True)
     is_custom = fields.Bool(dump_only=True)
+    description = fields.Str(required=False)
     created_by = fields.Int(dump_only=True)
 
 vision_board_schema = VisionBoardSchema()

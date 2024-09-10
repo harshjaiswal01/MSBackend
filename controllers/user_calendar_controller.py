@@ -31,3 +31,11 @@ def delete_custom_event(user_id, event_id):
     if error:
         return jsonify(error), 404
     return jsonify(message), 200
+
+@token_required
+def update_event_location(user_id, event_id):
+    data = request.json
+    event, error = user_calendar_service.update_event_location(event_id, data['location'])
+    if error:
+        return jsonify(error), 400
+    return jsonify(event), 200

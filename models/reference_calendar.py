@@ -5,8 +5,10 @@ class ReferenceCalendar(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     day_of_pregnancy = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.String(255), nullable=False)  # Make sure this line exists
+    title = db.Column(db.String(255), nullable=False)  # New title field
+    description = db.Column(db.String(255), nullable=False)
     
-    def __init__(self, day_of_pregnancy, description):
+    def __init__(self, day_of_pregnancy, title, description):
         self.day_of_pregnancy = day_of_pregnancy
+        self.title = title
         self.description = description

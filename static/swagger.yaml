@@ -1,12 +1,12 @@
 openapi: 3.0.0
 info:
-  title: User Management API
+  title: Melanated Sanctuary API
   version: 1.0.0
   description: API for managing users, user details, subscriptions, vision boards, and content items.
 
-servers:
-  - url: http://localhost:5000
-    description: Local server
+# servers:
+#   - url: http://localhost:5000
+#     description: Melanated Sanctuary API's
 
 tags:
   - name: Users
@@ -19,10 +19,12 @@ tags:
     description: Operations related to vision boards
   - name: Content Items
     description: Operations related to content items within vision boards
-  - name: Calendar
-    description: Operations related to the user and reference calendars
-  - name: Questionnaire
-    description: Operations related to user questionnaires
+  - name: Reference Calendar
+    description: Operations related to the reference calendar so that all Users have access to all the important dates
+  - name: User Calendar
+    description: Operations related to the user calendars
+  # - name: Questionnaire
+  #   description: Operations related to user questionnaires
   - name: Google OAuth
     description: Google OAuth login and callback endpoints
 
@@ -237,6 +239,8 @@ paths:
       summary: Update user details
       description: Update the details of the user by providing the details data. The user is identified through the authentication token.
       operationId: updateUserDetails
+      security:
+        - BearerAuth: []
       requestBody:
         description: Data for updating user details
         required: true
@@ -295,433 +299,77 @@ paths:
                   message:
                     type: string
                     example: Unauthorized
-
-  /user_details/{id}:
     get:
       tags:
         - User Details
-      summary: Get user details by ID
+      summary: Get user details for the logged in user
       security:
         - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
+      # parameters:
+      #   - name: id
+      #     in: path
+      #     required: true
+      #     schema:
+      #       type: integer
       responses:
         '200':
           description: User details
         '404':
           description: User details not found
 
-  /users/{user_id}/subscriptions:
-    put:
+  /users/subscriptions:
+    get:
+      summary: Get current subscription status
+      description: Retrieve the current subscription status (newsletter and text subscription) for the logged-in user.
       tags:
         - Subscriptions
-      summary: Update user subscription preferences
       security:
         - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Subscription'
       responses:
-        '200':
-          description: Subscription updated successfully
-        '404':
-          description: User not found
-  /vision-boards:
-    post:
-      tags:
-        - Vision Boards
-      summary: Create a vision board
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VisionBoard'
-      responses:
-        '201':
-          description: Vision board created successfully
-        '400':
-          description: Bad request
-
-  /vision-boards/{vision_board_id}:
-    get:
-      tags:
-        - Vision Boards
-      summary: Get a vision board by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: vision_board_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Vision board details
-        '404':
-          description: Vision board not found
-
+        200:
+          description: Subscription found and returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  newsletter_subscription:
+                    type: boolean
+                    example: true
+                  text_subscription:
+                    type: boolean
+                    example: false
+                  user_id:
+                    type: integer
+                    example: 12
+        404:
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Subscription not found"
+        401:
+          description: Unauthorized access (token required)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Authorization token is missing or invalid"
     put:
+      summary: Update user subscription
+      description: Update the user's subscription preferences (newsletter and text subscription).
       tags:
-        - Vision Boards
-      summary: Update a vision board by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: vision_board_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VisionBoard'
-      responses:
-        '200':
-          description: Vision board updated successfully
-        '404':
-          description: Vision board not found
-
-    delete:
-      tags:
-        - Vision Boards
-      summary: Delete a vision board by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: vision_board_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Vision board deleted successfully
-        '404':
-          description: Vision board not found
-
-  /users/{user_id}/vision-boards:
-    get:
-      tags:
-        - Vision Boards
-      summary: Get all vision boards for a user
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of vision boards
-        '404':
-          description: User not found
-
-    post:
-      tags:
-        - Vision Boards
-      summary: Add a vision board to a user
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserVisionBoard'
-      responses:
-        '201':
-          description: Vision board added to user
-        '404':
-          description: User not found
-
-  /vision-boards/{vision_board_id}/content:
-    post:
-      tags:
-        - Content Items
-      summary: Add a content item to a vision board
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: vision_board_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ContentItem'
-      responses:
-        '201':
-          description: Content item added to vision board
-        '400':
-          description: Bad request
-
-  /vision-boards/content/{content_item_id}:
-    put:
-      tags:
-        - Content Items
-      summary: Update a content item in a vision board
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: content_item_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ContentItem'
-      responses:
-        '200':
-          description: Content item updated successfully
-        '404':
-          description: Content item not found
-
-    delete:
-      tags:
-        - Content Items
-      summary: Delete a content item from a vision board
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: content_item_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Content item deleted successfully
-        '404':
-          description: Content item not found
-  /reference_calendar:
-    post:
-      tags:
-        - Calendar
-      summary: Create a reference calendar entry
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReferenceCalendar'
-      responses:
-        '201':
-          description: Reference calendar entry created
-        '400':
-          description: Bad request
-
-  /reference_calendar/{id}:
-    get:
-      tags:
-        - Calendar
-      summary: Get a reference calendar entry by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Reference calendar entry details
-        '404':
-          description: Reference calendar entry not found
-
-    put:
-      tags:
-        - Calendar
-      summary: Update a reference calendar entry by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReferenceCalendar'
-      responses:
-        '200':
-          description: Reference calendar entry updated
-        '404':
-          description: Reference calendar entry not found
-
-    delete:
-      tags:
-        - Calendar
-      summary: Delete a reference calendar entry by ID
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Reference calendar entry deleted
-        '404':
-          description: Reference calendar entry not found
-
-  /users/{user_id}/calendar:
-    get:
-      tags:
-        - Calendar
-      summary: Get all calendar events for a user
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of calendar events
-        '404':
-          description: No calendar events found for this user
-
-  /users/{user_id}/calendar/custom:
-    post:
-      tags:
-        - Calendar
-      summary: Add a custom event to the user's calendar
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCalendarEvent'
-      responses:
-        '201':
-          description: Custom event added to calendar
-        '400':
-          description: Bad request
-
-  /users/{user_id}/calendar/custom/{event_id}:
-    put:
-      tags:
-        - Calendar
-      summary: Update a custom event in the user's calendar
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: event_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCalendarEvent'
-      responses:
-        '200':
-          description: Custom event updated successfully
-        '404':
-          description: Custom event not found
-
-    delete:
-      tags:
-        - Calendar
-      summary: Delete a custom event from the user's calendar
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: event_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Custom event deleted successfully
-        '404':
-          description: Custom event not found
-
-  /questionnaire:
-    get:
-      tags:
-        - Questionnaire
-      summary: Get available vision boards for questionnaire
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of available vision boards
-
-  /questionnaire/submit:
-    post:
-      tags:
-        - Questionnaire
-      summary: Submit selected vision boards
+        - Subscriptions
       security:
         - BearerAuth: []
       requestBody:
@@ -731,13 +379,985 @@ paths:
             schema:
               type: object
               properties:
-                selected_vision_boards:
-                  type: array
-                  items:
-                    type: integer
+                newsletter_subscription:
+                  type: boolean
+                  example: true
+                text_subscription:
+                  type: boolean
+                  example: true
       responses:
-        '200':
-          description: Vision boards submitted successfully
+        200:
+          description: Subscription updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  newsletter_subscription:
+                    type: boolean
+                    example: true
+                  text_subscription:
+                    type: boolean
+                    example: true
+                  user_id:
+                    type: integer
+                    example: 12
+        400:
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Validation error"
+        401:
+          description: Unauthorized access (token required)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Authorization token is missing or invalid"
+    
+  /vision-boards:
+    post:
+      summary: Create a new Vision Board
+      description: Creates a new vision board. If created by a user, they are automatically subscribed.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "My Vision Board"
+                description:
+                  type: string
+                  example: "This is a vision board for my goals."
+      responses:
+        201:
+          description: Vision board created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisionBoard'
+        400:
+          description: Error in creating vision board
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found or invalid data"
+
+  /vision-boards/{vision_board_id}:
+    get:
+      summary: Get a Vision Board by ID
+      description: Retrieve a specific vision board by its ID.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Vision board retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisionBoard'
+        404:
+          description: Vision board not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vision board not found"
+
+    put:
+      summary: Update a Vision Board
+      description: Update the name or description of a vision board by its ID.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Vision Board Name"
+                description:
+                  type: string
+                  example: "Updated description for this board."
+      responses:
+        200:
+          description: Vision board updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisionBoard'
+        400:
+          description: Error in updating vision board
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vision board not found or invalid data"
+
+  /users/vision-boards/{vision_board_id}:
+    delete:
+      summary: Delete a User-Created Vision Board
+      description: Deletes a vision board that was created by the user. Admin-created boards cannot be deleted by a user.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Vision board deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Vision board deleted successfully"
+        400:
+          description: Error in deleting vision board
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Cannot delete admin-created or other users' boards"
+
+  /users/vision-boards/all:
+    get:
+      summary: Get All Vision Boards for User
+      description: Retrieve all vision boards available to the user, including user-created and admin-created boards.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Vision boards retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VisionBoard'
+        404:
+          description: No vision boards found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No vision boards found for the user"
+
+  /users/vision-boards/subscribed:
+    get:
+      summary: Get Subscribed Vision Boards
+      description: Retrieve all vision boards the user is subscribed to, including admin-created boards (unless unsubscribed).
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Subscribed vision boards retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VisionBoard'
+        404:
+          description: No subscribed vision boards found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No subscribed vision boards found for the user"
+
+  /users/vision-boards:
+    post:
+      summary: Subscribe to a Vision Board
+      description: Subscribe the user to a vision board by setting the `is_subscribed` field to `true`.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vision_board_id:
+                  type: integer
+                  example: 2
+      responses:
+        201:
+          description: Subscribed to vision board successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserVisionBoard'
+        400:
+          description: Error in subscribing to vision board
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Vision board not found or invalid request"
+
+  /users/vision-boards/unsubscribe:
+    post:
+      summary: Unsubscribe from an Admin-Created Vision Board
+      description: Sets the `is_subscribed` field to `false` to unsubscribe the user from a vision board.
+      tags:
+        - Vision Boards
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vision_board_id:
+                  type: integer
+                  example: 3
+      responses:
+        200:
+          description: Unsubscribed from vision board successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserVisionBoard'
+        400:
+          description: Error in unsubscribing from vision board
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Already unsubscribed or invalid board"
+  /vision-boards/{vision_board_id}/content:
+    get:
+      summary: Get all content items for a vision board with pagination
+      description: Retrieves all content items for a specific vision board. Supports pagination with `page` and `per_page` query parameters.
+      tags:
+        - Content Items
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+          description: Page number (default is 1)
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+          description: Number of items per page (default is 10)
+      responses:
+        200:
+          description: Paginated list of content items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContentItem'
+        400:
+          description: Error retrieving content items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error retrieving content"
+  # /vision-boards/{vision_board_id}/content:
+    post:
+      summary: Add a new content item to a vision board
+      description: Adds a content item with metadata to a vision board. Requires JWT authentication.
+      tags:
+        - Content Items
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content_url:
+                  type: string
+                  example: "https://example.com/article"
+                content_type:
+                  type: string
+                  example: "article"
+      responses:
+        201:
+          description: Content item added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItem'
+        400:
+          description: Error in adding content item
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error adding content"
+
+  /vision-boards/content/{content_item_id}:
+    put:
+      summary: Update a content item
+      description: Updates the metadata of a content item. Requires JWT authentication.
+      tags:
+        - Content Items
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: content_item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "Updated Article Title"
+                description:
+                  type: string
+                  example: "Updated description for this article"
+                main_image_url:
+                  type: string
+                  example: "https://example.com/newimage.jpg"
+      responses:
+        200:
+          description: Content item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItem'
+        400:
+          description: Error in updating content item
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error updating content item"
+    delete:
+      summary: Delete a content item
+      description: Deletes a content item from a vision board. Requires JWT authentication.
+      tags:
+        - Content Items
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: content_item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Content item deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Content item deleted successfully"
+        400:
+          description: Error in deleting content item
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error deleting content item"
+  /vision-boards/{vision_board_id}/custom-article:
+    post:
+      summary: Post a custom article for a vision board
+      description: Creates a custom article with a unique URL, storing both the metadata and the body of the article.
+      tags:
+        - Content Items
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: vision_board_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: "My First Custom Article"
+                body:
+                  type: string
+                  example: "This is the body of my custom article..."
+                description:
+                  type: string
+                  example: "A brief description of the article"
+                main_image_url:
+                  type: string
+                  example: "https://example.com/image.jpg"
+      responses:
+        201:
+          description: Custom article created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content_item:
+                    $ref: '#/components/schemas/ContentItem'
+                  article_body:
+                    $ref: '#/components/schemas/ArticleBody'
+                  url:
+                    type: string
+                    example: "/articles/my-first-custom-article-123"
+        400:
+          description: Error in creating custom article
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Title and body are required"
+  
+  /calendar:
+    get:
+      summary: Get user calendar events
+      description: Get all calendar events for the current user, including both custom and reference events.
+      tags:
+        - User Calendar
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: A list of calendar events for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserCalendar'
+        404:
+          description: No events found for this user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No calendar events found"
+
+  /calendar/custom:
+    post:
+      summary: Add a custom event to the user's calendar
+      description: Add a new custom event to the current user's calendar.
+      tags:
+        - User Calendar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_date:
+                  type: string
+                  format: date
+                  example: "2024-09-30"
+                title:
+                  type: string
+                  example: "Yoga Class"
+                description:
+                  type: string
+                  example: "Join the prenatal yoga class"
+                location:
+                  type: string
+                  example: "Local Community Center"
+      responses:
+        201:
+          description: Custom event added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCalendar'
+        400:
+          description: Error in adding custom event
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input"
+
+  /calendar/custom/{event_id}:
+    put:
+      summary: Update a custom event
+      description: Update a custom event in the current user's calendar.
+      tags:
+        - User Calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_date:
+                  type: string
+                  format: date
+                  example: "2024-09-30"
+                title:
+                  type: string
+                  example: "Yoga Class"
+                description:
+                  type: string
+                  example: "Join the prenatal yoga class"
+                location:
+                  type: string
+                  example: "Local Community Center"
+      responses:
+        200:
+          description: Custom event updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCalendar'
+        404:
+          description: Custom event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Custom event not found"
+
+    delete:
+      summary: Delete a custom event
+      description: Delete a custom event from the user's calendar.
+      tags:
+        - User Calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Custom event deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Custom event deleted successfully"
+        404:
+          description: Custom event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Custom event not found"
+
+  /calendar/custom/{event_id}/location:
+    put:
+      summary: Update the location of a custom event
+      description: Modify the location field for a specific event in the user's calendar.
+      tags:
+        - User Calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                location:
+                  type: string
+                  example: "Local Community Center"
+      responses:
+        200:
+          description: Location updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCalendar'
+        400:
+          description: Error in updating location
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error updating location"
+
+  /reference_calendar:
+    get:
+      summary: Get all reference calendar events
+      description: Get all events from the reference calendar.
+      tags:
+        - Reference Calendar
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: A list of reference calendar events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferenceCalendar'
+
+    post:
+      summary: Add a reference calendar event
+      description: Add a new event to the reference calendar (admin only).
+      tags:
+        - Reference Calendar
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                day_of_pregnancy:
+                  type: integer
+                  example: 50
+                title:
+                  type: string
+                  example: "First Trimester Ultrasound"
+                description:
+                  type: string
+                  example: "Schedule the first ultrasound scan"
+      responses:
+        201:
+          description: Reference calendar event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCalendar'
+        400:
+          description: Error in adding reference calendar event
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input"
+
+  /reference_calendar/{id}:
+    get:
+      summary: Get a specific reference calendar event
+      description: Retrieve a specific event from the reference calendar by ID.
+      tags:
+        - Reference Calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: A reference calendar event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCalendar'
+        404:
+          description: Reference calendar event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Event not found"
+
+    put:
+      summary: Update a reference calendar event
+      description: Update an event in the reference calendar (admin only).
+      tags:
+        - Reference Calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                day_of_pregnancy:
+                  type: integer
+                  example: 50
+                title:
+                  type: string
+                  example: "First Trimester Ultrasound"
+                description:
+                  type: string
+                  example: "Schedule the first ultrasound scan"
+      responses:
+        200:
+          description: Reference calendar event updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceCalendar'
+        400:
+          description: Error in updating reference calendar event
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error updating event"
+
+    delete:
+      summary: Delete a reference calendar event
+      description: Delete an event from the reference calendar (admin only).
+      tags:
+        - Reference Calendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        200:
+          description: Reference calendar event deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Event deleted successfully"
+        404:
+          description: Event not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Event not found"
+
+  # /questionnaire:
+  #   get:
+  #     tags:
+  #       - Questionnaire
+  #     summary: Get available vision boards for questionnaire
+  #     security:
+  #       - BearerAuth: []
+  #     responses:
+  #       '200':
+  #         description: List of available vision boards
+
+  # /questionnaire/submit:
+  #   post:
+  #     tags:
+  #       - Questionnaire
+  #     summary: Submit selected vision boards
+  #     security:
+  #       - BearerAuth: []
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               selected_vision_boards:
+  #                 type: array
+  #                 items:
+  #                   type: integer
+  #     responses:
+  #       '200':
+  #         description: Vision boards submitted successfully
 
 components:
   securitySchemes:
@@ -793,18 +1413,39 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         name:
           type: string
+          example: "My Vision Board"
         description:
           type: string
-        created_by_admin:
+          example: "This is a vision board description."
+        is_custom:
           type: boolean
+          example: true
+        created_by:
+          type: integer
+          example: 2
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-09-09T12:00:00Z"
 
     UserVisionBoard:
       type: object
       properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 2
         vision_board_id:
           type: integer
+          example: 3
+        is_subscribed:
+          type: boolean
+          example: true
 
     ContentItem:
       type: object
@@ -823,15 +1464,15 @@ components:
         main_image:
           type: string
 
-    ReferenceCalendar:
-      type: object
-      properties:
-        id:
-          type: integer
-        day_of_pregnancy:
-          type: integer
-        description:
-          type: string
+    # ReferenceCalendar:
+    #   type: object
+    #   properties:
+    #     id:
+    #       type: integer
+    #     day_of_pregnancy:
+    #       type: integer
+    #     description:
+    #       type: string
 
     UserCalendarEvent:
       type: object

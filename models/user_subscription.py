@@ -11,6 +11,7 @@ class UserSubscription(Base):
 
     user: Mapped["User"] = db.relationship("User", back_populates="subscriptions")
 
-    def __init__(self, newsletter_subscription=False, text_subscription=False):
+    def __init__(self, newsletter_subscription=False, text_subscription=False, user_id = None):
         self.newsletter_subscription = newsletter_subscription
         self.text_subscription = text_subscription
+        self.user_id = user_id

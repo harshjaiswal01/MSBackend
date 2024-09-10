@@ -28,7 +28,8 @@ def create_app():
     app.config.from_object('config.DevelopmentConfig')
     app.secret_key = os.urandom(24)  # Required for session management
 
-    CORS(app)
+    # CORS(app)
+    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
     db.init_app(app)
     ma.init_app(app)
     

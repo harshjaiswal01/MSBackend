@@ -16,6 +16,9 @@ class ContentItem(Base):
 
     vision_board: Mapped["VisionBoard"] = db.relationship("VisionBoard", back_populates="content_items")
 
+    # One-to-one relationship with ArticleBody
+    article_body: Mapped["ArticleBody"] = db.relationship("ArticleBody", uselist=False, back_populates="content_item")
+
     def __init__(self, vision_board_id, content_url, title, description, created_at, main_image_url, content_type):
         self.vision_board_id = vision_board_id
         self.content_url = content_url

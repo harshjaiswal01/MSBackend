@@ -34,6 +34,7 @@ def populate_user_calendar(user_details):
         user_calendar_event = UserCalendar(
             user_id=user_details.user_id,
             event_date=event_date,
+            title=event.title,
             description=event.description
         )
         user_calendar_events.append(user_calendar_event)
@@ -74,7 +75,9 @@ def add_custom_calendar_event(user_id, event_data):
     custom_event = UserCalendar(
         user_id=user_id,
         event_date=event_data['event_date'],
-        description=event_data['description']
+        description=event_data['description'],
+        title = event_data['title'],
+        location = event_data['location']
     )
     db.session.add(custom_event)
     db.session.commit()
@@ -104,4 +107,13 @@ def delete_custom_calendar_event(event_id):
 
     db.session.delete(event)
     db.session.commit()
-    return {"message": "Custom event deleted successfully"}
+    return {"message": "Custom event deleted successfully"}, None
+
+def update_event_location(event_id, location):
+    event = db.session.query(UserCalendar).filter_by(id=event_id).first()
+    if not event:
+        return None, {"error": "Event not found"}
+
+    event.location = location
+    db.session.commit()
+    return user_calendar_schema.dump(event), None

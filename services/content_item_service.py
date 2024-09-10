@@ -1,6 +1,8 @@
 from database import db
 from models.content_item import ContentItem
-from models.schemas.content_item_schema import content_item_schema
+from models.article_body import ArticleBody
+from models.schemas.content_item_schema import content_item_schema, content_items_schema
+from models.schemas.article_body_schema import article_body_schema, article_bodies_schema
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -56,3 +58,48 @@ def delete_content_item(content_item_id):
     db.session.delete(content_item)
     db.session.commit()
     return {"message": "Content item deleted successfully"}
+
+def get_content_items_for_vision_board(vision_board_id, page, per_page):
+    query = db.session.query(ContentItem).filter_by(vision_board_id=vision_board_id)
+    
+    # Apply pagination using the limit and offset based on page and per_page
+    paginated_query = query.limit(per_page).offset((page - 1) * per_page).all()
+
+    return content_items_schema.dump(paginated_query), None
+
+
+def generate_custom_article_url(title):
+    slug = slugify(title)
+    unique_id = random.randint(100, 999)
+    return f"/articles/{slug}-{unique_id}"
+
+def add_custom_article(vision_board_id, title, body, description=None, main_image_url=None):
+    # Generate the custom URL for the article
+    custom_url = generate_custom_article_url(title)
+
+    # Create the ContentItem
+    content_item = ContentItem(
+        vision_board_id=vision_board_id,
+        content_url=custom_url,
+        title=title,
+        description=description,
+        created_at=datetime.now(),
+        main_image_url=main_image_url,
+        content_type="custom_article"
+    )
+    db.session.add(content_item)
+    db.session.commit()
+
+    # Create and link the ArticleBody
+    article_body = ArticleBody(
+        content_item_id=content_item.id,
+        body=body
+    )
+    db.session.add(article_body)
+    db.session.commit()
+
+    return {
+        "content_item": content_item_schema.dump(content_item),
+        "article_body": article_body_schema.dump(article_body),
+        "url": custom_url
+    }, None
