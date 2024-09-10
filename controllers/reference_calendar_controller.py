@@ -2,6 +2,7 @@ from flask import request, jsonify
 from services import reference_calendar_service
 from utils.util import admin_required, token_required
 from models.user import User
+from database import db
 
 def is_admin(user_id):
     user = db.session.query(User).filter_by(id=user_id).first()
