@@ -8,24 +8,35 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 def fetch_metadata(content_url):
-    response = requests.get(content_url)
+    # Disable SSL verification by passing verify=False
+    response = requests.get(content_url, verify=False)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Try to find the meta title first, fall back to title tag if not found
-    title_tag = soup.find('meta', property='og:title')
-    if not title_tag:
-        title_tag = soup.find('title')
-    
-    title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
-    
-    description = soup.find('meta', property='og:description')
-    main_image = soup.find('meta', property='og:image')
+    # Handle YouTube URLs specifically
+    if "youtube.com" in content_url or "youtu.be" in content_url:
+        title_tag = soup.find('meta', property='og:title')
+        description_tag = soup.find('meta', property='og:description')
+        main_image_tag = soup.find('meta', property='og:image')
+
+        title = title_tag['content'] if title_tag else ''
+        description = description_tag['content'] if description_tag else ''
+        main_image_url = main_image_tag['content'] if main_image_tag else ''
+    else:
+        # General logic for non-YouTube URLs
+        title_tag = soup.find('meta', property='og:title') or soup.find('title')
+        title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
+        
+        description_tag = soup.find('meta', property='og:description')
+        main_image_tag = soup.find('meta', property='og:image')
+        description = description_tag['content'] if description_tag else ''
+        main_image_url = main_image_tag['content'] if main_image_tag else ''
+
     created_at = datetime.now()
 
     return {
         "title": title,
-        "description": description['content'] if description else '',
-        "main_image_url": main_image['content'] if main_image else '',
+        "description": description,
+        "main_image_url": main_image_url,
         "created_at": created_at
     }
 
