@@ -125,7 +125,12 @@ def export_calendar_to_ics(user_id):
     Export user's calendar events as an iCalendar (.ics) format.
     """
     # Get all calendar events for the user
-    events = get_user_calendar(user_id)
+    events = get_user_calendar_events(user_id)
+    print("\n")
+    print(events)
+    print("\n")
+    if not events:
+        return None  # Return None if no events are found
 
     # Create an iCalendar object
     cal = Calendar()
@@ -134,19 +139,17 @@ def export_calendar_to_ics(user_id):
 
     # Add each event to the iCalendar object
     for event in events:
-        if isinstance(event, dict):
+        if isinstance(event, dict):  # Make sure event is a dictionary
             ical_event = Event()
-            ical_event.add('summary', event.get('title')) 
-            ical_event.add('dtstart', event.get('event_date'))  
-            ical_event.add('description', event.get('description'))  # Event description
-            ical_event.add('location', event.get('location'))  # Event location
+            ical_event.add('summary', event.get('title'))  # Title as 'summary'
+            ical_event.add('dtstart', event.get('event_date'))  # Start date
+            ical_event.add('description', event.get('description'))  # Description
+            ical_event.add('location', event.get('location'))  # Location
 
             # Add the event to the calendar
             cal.add_component(ical_event)
-        else:
-            return None, "Invalid event data."
 
-    # Convert calendar to string (ICS format)
+    # Convert the calendar to string (ICS format)
     ics_file = io.BytesIO()
     ics_file.write(cal.to_ical())
     ics_file.seek(0)

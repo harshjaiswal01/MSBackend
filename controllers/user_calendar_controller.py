@@ -48,6 +48,9 @@ def export_user_calendar(user_id):
     try:
         # Call the service to generate the ICS file
         ics_file = user_calendar_service.export_calendar_to_ics(user_id)
+
+        if ics_file is None:
+            return jsonify({"error": "No events found for the user"}), 404
         
         # Return the ICS file as a response
         return Response(
@@ -58,4 +61,4 @@ def export_user_calendar(user_id):
             }
         )
     except Exception as e:
-        return {"error": str(e)}, 500
+        return jsonify({"error": str(e)}), 500
