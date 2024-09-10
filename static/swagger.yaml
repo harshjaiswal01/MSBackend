@@ -1153,8 +1153,10 @@ paths:
     get:
       summary: Export user calendar in iCalendar format
       description: Exports the user calendar as an iCalendar (.ics) file for syncing with Google or Apple calendars.
+      tags:
+        - User Calendar
       security:
-        - bearerAuth: []  # Assuming you're using JWT or OAuth for authentication
+        - BearerAuth: []
       responses:
         '200':
           description: Calendar exported successfully
