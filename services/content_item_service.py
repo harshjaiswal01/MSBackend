@@ -11,17 +11,24 @@ def fetch_metadata(content_url):
     response = requests.get(content_url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    title = soup.find('meta', property='og:title') or soup.find('title')
+    # Try to find the meta title first, fall back to title tag if not found
+    title_tag = soup.find('meta', property='og:title')
+    if not title_tag:
+        title_tag = soup.find('title')
+    
+    title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
+    
     description = soup.find('meta', property='og:description')
     main_image = soup.find('meta', property='og:image')
     created_at = datetime.now()
 
     return {
-        "title": title['content'] if title else '',
+        "title": title,
         "description": description['content'] if description else '',
         "main_image_url": main_image['content'] if main_image else '',
         "created_at": created_at
     }
+
 
 def add_content_item(vision_board_id, content_url, content_type):
     metadata = fetch_metadata(content_url)
