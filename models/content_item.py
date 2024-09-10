@@ -9,7 +9,7 @@ class ContentItem(Base):
     vision_board_id: Mapped[int] = mapped_column(db.Integer, db.ForeignKey('vision_boards.id'), nullable=False)
     content_url: Mapped[str] = mapped_column(db.String(300), nullable=False)
     title: Mapped[str] = mapped_column(db.String(200), nullable=False)
-    description: Mapped[str] = mapped_column(db.String(500), nullable=True)
+    description: Mapped[str] = mapped_column(db.Text, nullable=True)  # Changed to db.Text for longer descriptions
     created_at: Mapped[datetime] = mapped_column(db.DateTime, nullable=True)
     main_image_url: Mapped[str] = mapped_column(db.String(300), nullable=True)
     content_type: Mapped[str] = mapped_column(db.String(50), nullable=False)
