@@ -6,6 +6,7 @@ from models.user_details import UserDetails
 from models.schemas.user_calendar_schema import user_calendar_schema, user_calendars_schema
 from icalendar import Calendar, Event
 import io
+import uuid
 from datetime import datetime
 
 def calculate_trimesters(due_date):
