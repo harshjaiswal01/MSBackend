@@ -6,31 +6,48 @@ from models.schemas.article_body_schema import article_body_schema, article_bodi
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+import yt_dlp
 
 def fetch_metadata(content_url):
-    # Disable SSL verification by passing verify=False
+    # If the URL is from YouTube, use yt-dlp to extract metadata
+    if "youtube.com" in content_url or "youtu.be" in content_url:
+        return fetch_youtube_metadata(content_url)
+    
+    # Otherwise, use BeautifulSoup to scrape general HTML
     response = requests.get(content_url, verify=False)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Handle YouTube URLs specifically
-    if "youtube.com" in content_url or "youtu.be" in content_url:
-        title_tag = soup.find('meta', property='og:title')
-        description_tag = soup.find('meta', property='og:description')
-        main_image_tag = soup.find('meta', property='og:image')
+    # Try to extract title from OpenGraph or title tag
+    title_tag = soup.find('meta', property='og:title') or soup.find('title')
+    title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
+    
+    # Try to extract description from OpenGraph or meta description
+    description_tag = soup.find('meta', property='og:description') or soup.find('meta', attrs={'name': 'description'})
+    description = description_tag['content'] if description_tag else ''
 
-        title = title_tag['content'] if title_tag else ''
-        description = description_tag['content'] if description_tag else ''
-        main_image_url = main_image_tag['content'] if main_image_tag else ''
-    else:
-        # General logic for non-YouTube URLs
-        title_tag = soup.find('meta', property='og:title') or soup.find('title')
-        title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
-        
-        description_tag = soup.find('meta', property='og:description')
-        main_image_tag = soup.find('meta', property='og:image')
-        description = description_tag['content'] if description_tag else ''
-        main_image_url = main_image_tag['content'] if main_image_tag else ''
+    # Try to extract main image from OpenGraph
+    main_image_tag = soup.find('meta', property='og:image')
+    main_image_url = main_image_tag['content'] if main_image_tag else ''
 
+    created_at = datetime.now()
+
+    return {
+        "title": title,
+        "description": description,
+        "main_image_url": main_image_url,
+        "created_at": created_at
+    }
+
+def fetch_youtube_metadata(youtube_url):
+    # Use yt-dlp to extract metadata from YouTube videos
+    ydl_opts = {}
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(youtube_url, download=False)
+    
+    # Extract relevant fields from the YouTube metadata
+    title = info.get('title', '')
+    description = info.get('description', '')
+    main_image_url = info.get('thumbnail', '')
     created_at = datetime.now()
 
     return {
