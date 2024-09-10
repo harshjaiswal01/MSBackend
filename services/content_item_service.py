@@ -66,6 +66,11 @@ def fetch_youtube_metadata(youtube_url):
 
 def add_content_item(vision_board_id, content_url, content_type):
     metadata = fetch_metadata(content_url)
+    description = metadata['description']
+    
+    # Truncate description to 255 characters if necessary
+    if len(description) > 255:
+        description = description[:255]
     content_item = ContentItem(
         vision_board_id=vision_board_id,
         content_url=content_url,
