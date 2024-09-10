@@ -134,14 +134,17 @@ def export_calendar_to_ics(user_id):
 
     # Add each event to the iCalendar object
     for event in events:
-        ical_event = Event()
-        ical_event.add('summary', event.title)
-        ical_event.add('dtstart', event.event_date)  # Using your existing event_date field
-        ical_event.add('description', event.description)
-        ical_event.add('location', event.location)
+        if isinstance(event, dict):
+            ical_event = Event()
+            ical_event.add('summary', event.get('title')) 
+            ical_event.add('dtstart', event.get('event_date'))  
+            ical_event.add('description', event.get('description'))  # Event description
+            ical_event.add('location', event.get('location'))  # Event location
 
-        # Add the event to the calendar
-        cal.add_component(ical_event)
+            # Add the event to the calendar
+            cal.add_component(ical_event)
+        else:
+            return None, "Invalid event data."
 
     # Convert calendar to string (ICS format)
     ics_file = io.BytesIO()
