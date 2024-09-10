@@ -6,6 +6,7 @@ from models.user_details import UserDetails
 from models.schemas.user_calendar_schema import user_calendar_schema, user_calendars_schema
 from icalendar import Calendar, Event
 import io
+from datetime import datetime
 
 def calculate_trimesters(due_date):
     """
@@ -125,10 +126,8 @@ def export_calendar_to_ics(user_id):
     Export user's calendar events as an iCalendar (.ics) format.
     """
     # Get all calendar events for the user
-    events = get_user_calendar(user_id)
-    print("\n")
-    print(events)
-    print("\n")
+    events, _ = get_user_calendar(user_id)  # If it's returning two elements, unpack them correctly
+
     if not events:
         return None  # Return None if no events are found
 
@@ -139,17 +138,37 @@ def export_calendar_to_ics(user_id):
 
     # Add each event to the iCalendar object
     for event in events:
-        if isinstance(event, dict):  # Make sure event is a dictionary
-            ical_event = Event()
-            ical_event.add('summary', event.get('title'))  # Title as 'summary'
-            ical_event.add('dtstart', event.get('event_date'))  # Start date
-            ical_event.add('description', event.get('description'))  # Description
-            ical_event.add('location', event.get('location'))  # Location
+        if isinstance(event, dict):
+            try:
+                # Convert event_date to datetime object
+                event_date = datetime.strptime(event.get('event_date'), "%Y-%m-%d")
+                
+                # Ensure the event has required fields
+                if event.get('title') and event_date:
+                    ical_event = Event()
+                    ical_event.add('summary', event.get('title'))  # Title as 'summary'
+                    ical_event.add('dtstart', event_date)  # Start date
 
-            # Add the event to the calendar
-            cal.add_component(ical_event)
+                    if event.get('description'):
+                        ical_event.add('description', event.get('description'))  # Description
+                    if event.get('location'):
+                        ical_event.add('location', event.get('location'))  # Location
 
-    # Convert the calendar to string (ICS format)
+                    # Add the event to the calendar
+                    cal.add_component(ical_event)
+                else:
+                    # If essential data is missing, skip the event
+                    continue
+            except ValueError as e:
+                # Handle any invalid date format issues
+                print(f"Error parsing date for event {event}: {e}")
+                continue
+
+    # If there are no valid events, return None
+    if not cal.subcomponents:
+        return None
+
+    # Convert calendar to string (ICS format)
     ics_file = io.BytesIO()
     ics_file.write(cal.to_ical())
     ics_file.seek(0)
