@@ -7,6 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import yt_dlp
+from config import YOUTUBE_API_KEY
 
 def fetch_metadata(content_url):
     # If the URL is from YouTube, use yt-dlp to extract metadata
