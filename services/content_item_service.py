@@ -39,22 +39,25 @@ def fetch_metadata(content_url):
     }
 
 def fetch_youtube_metadata(youtube_url):
-    # Use yt-dlp to extract metadata from YouTube videos
-    ydl_opts = {}
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(youtube_url, download=False)
+    video_id = youtube_url.split("v=")[-1]
+    api_url = f"https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={YOUTUBE_API_KEY}&part=snippet"
     
-    # Extract relevant fields from the YouTube metadata
-    title = info.get('title', '')
-    description = info.get('description', '')
-    main_image_url = info.get('thumbnail', '')
-    created_at = datetime.now()
+    response = requests.get(api_url)
+    data = response.json()
+
+    if 'items' in data and len(data['items']) > 0:
+        video_data = data['items'][0]['snippet']
+        title = video_data.get('title', '')
+        description = video_data.get('description', '')
+        main_image_url = video_data.get('thumbnails', {}).get('high', {}).get('url', '')
+    else:
+        title, description, main_image_url = '', '', ''
 
     return {
         "title": title,
         "description": description,
         "main_image_url": main_image_url,
-        "created_at": created_at
+        "created_at": datetime.now()
     }
 
 
