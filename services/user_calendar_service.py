@@ -125,7 +125,7 @@ def export_calendar_to_ics(user_id):
     Export user's calendar events as an iCalendar (.ics) format.
     """
     # Get all calendar events for the user
-    events = get_user_calendar_events(user_id)
+    events = get_user_calendar(user_id)
     print("\n")
     print(events)
     print("\n")
