@@ -1484,3 +1484,47 @@ components:
           format: date
         description:
           type: string
+    UserCalendar:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        event_date:
+          type: string
+          format: date
+          example: '2024-09-30'
+        title:
+          type: string
+          example: 'Prenatal Yoga Class'
+        description:
+          type: string
+          example: 'Join the prenatal yoga class at 10 AM.'
+        location:
+          type: string
+          example: 'Local Yoga Studio'
+    ReferenceCalendar:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        day_of_pregnancy:
+          type: integer
+          description: 'The day of pregnancy for the event'
+          example: 50
+        title:
+          type: string
+          description: 'Title of the event or milestone'
+          example: 'First Ultrasound'
+        description:
+          type: string
+          description: 'Detailed description of the event or milestone'
+          example: 'It is recommended to schedule the first ultrasound to check the development of the baby and confirm the due date.'
+      required:
+        - day_of_pregnancy
+        - title
+        - description
