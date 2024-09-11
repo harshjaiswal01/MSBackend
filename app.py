@@ -65,7 +65,13 @@ def google_login():
     nonce = os.urandom(16).hex()
     session['nonce'] = nonce  # Store the nonce in the session
     redirect_uri = url_for('google_auth_callback', _external=True)
-    return oauth.google.authorize_redirect(redirect_uri, nonce=nonce)
+
+    # Include scopes for email, profile (which includes name and profile picture)
+    return oauth.google.authorize_redirect(
+        redirect_uri, 
+        nonce=nonce,
+        scope=['openid', 'profile', 'email']  # Request email, profile, and openid
+    )
 
 @app.route('/login/google/callback')
 def google_auth_callback():
@@ -115,6 +121,28 @@ def google_auth_callback():
 
         # Send the email
         mail.send(msg)
+    else:
+        # If the user exists, check if the profile information needs updating
+        update_required = False
+
+        # Check and update first name if missing or empty
+        if not user.first_name:
+            user.first_name = validated_user['first_name']
+            update_required = True
+
+        # Check and update last name if missing or empty
+        if not user.last_name:
+            user.last_name = validated_user['last_name']
+            update_required = True
+
+        # Check and update profile picture if missing or empty
+        if not user.profile_picture:
+            user.profile_picture = validated_user['profile_picture']
+            update_required = True
+
+        # Commit the changes only if an update was made
+        if update_required:
+            db.session.commit()
 
     # Generate a JWT token for the user
     jwt_token = encode_token(user.id, user.is_admin)
