@@ -71,6 +71,7 @@ def google_login():
         redirect_uri, 
         nonce=nonce,
         scope=['openid', 'profile', 'email']  # Request email, profile, and openid
+        prompt='consent'
     )
 
 @app.route('/login/google/callback')
