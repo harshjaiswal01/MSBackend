@@ -95,6 +95,9 @@ def google_auth_callback():
 
     # Check if the user exists in the database
     user = db.session.query(User).filter_by(email=validated_user['email']).first()
+
+    print(user.first_name, " First Name")
+    print(user.last_name, " Last Name")
     
     if user is None:
         # If the user doesn't exist, create a new user record
