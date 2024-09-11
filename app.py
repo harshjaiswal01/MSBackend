@@ -70,8 +70,7 @@ def google_login():
     return oauth.google.authorize_redirect(
         redirect_uri, 
         nonce=nonce,
-        scope=['openid', 'profile', 'email'],  # Request email, profile, and openid
-        prompt='consent'
+        scope=['openid', 'profile', 'email']  # Request email, profile, and openid
     )
 
 @app.route('/login/google/callback')
@@ -83,10 +82,11 @@ def google_auth_callback():
     if nonce is None:
         return "Nonce is missing from the session.", 400
 
-    # Parse the ID token and verify the nonce
-    user_info = oauth.google.parse_id_token(token, nonce=nonce)
+    # Call Google's userinfo API to get the profile information
+    user_info_response = oauth.google.get('https://www.googleapis.com/oauth2/v3/userinfo', token=token)
+    user_info = user_info_response.json()
 
-    # Handle user information and session management here
+    # Extract user info from the response
     validated_user = {
         'email': user_info.get('email'),
         'first_name': user_info.get('given_name', ''),  # Use .get() to avoid KeyError
@@ -97,9 +97,6 @@ def google_auth_callback():
     # Check if the user exists in the database
     user = db.session.query(User).filter_by(email=validated_user['email']).first()
 
-    print(user.first_name, " First Name")
-    print(user.last_name, " Last Name")
-    
     if user is None:
         # If the user doesn't exist, create a new user record
         user = User(
@@ -112,51 +109,45 @@ def google_auth_callback():
         db.session.add(user)
         db.session.commit()
 
-        # Prepare the email message
+        # Send welcome email
         msg = Message(
             subject='Welcome to The Melanated Sanctuary!',
             recipients=[user.email],
             sender='themelanatedsanctuary@gmail.com'
         )
-
-        # Render the email body using Jinja2 templates
-        msg.body = render_template('email/welcome.txt', username=user.email, firstname=user.first_name, lastname = user.last_name)  # Plain text
-        msg.html = render_template('email/welcome.html', username=user.email, firstname=user.first_name, lastname = user.last_name)  # HTML
-
-        # Send the email
+        msg.body = render_template('email/welcome.txt', username=user.email, firstname=user.first_name, lastname=user.last_name)
+        msg.html = render_template('email/welcome.html', username=user.email, firstname=user.first_name, lastname=user.last_name)
         mail.send(msg)
+
     else:
         # If the user exists, check if the profile information needs updating
         update_required = False
 
-        # Check and update first name if missing or empty
         if not user.first_name:
             user.first_name = validated_user['first_name']
             update_required = True
 
-        # Check and update last name if missing or empty
         if not user.last_name:
             user.last_name = validated_user['last_name']
             update_required = True
 
-        # Check and update profile picture if missing or empty
         if not user.profile_picture:
             user.profile_picture = validated_user['profile_picture']
             update_required = True
 
-        # Commit the changes only if an update was made
         if update_required:
             db.session.commit()
 
-    # Generate a JWT token for the user
+    # Generate JWT token for the user
     jwt_token = encode_token(user.id, user.is_admin)
 
-    # Store the user information in the session
+    # Store user information in the session
     session['user_id'] = user.id
     session['user_name'] = user.first_name
 
-    # Redirect to the frontend dashboard with the token as a query parameter
+    # Redirect to the dashboard with the JWT token
     return redirect(url_for('dashboard', token=jwt_token))
+
 
 @app.route('/dashboard')
 def dashboard():
