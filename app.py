@@ -18,6 +18,8 @@ from routes import reference_calendar_routes
 from utils.util import encode_token
 import os
 from extensions import mail
+from flask_mail import Message
+from flask import render_template
 
 # Swagger
 SWAGGER_URL = '/api/docs'
@@ -100,10 +102,24 @@ def google_auth_callback():
         db.session.add(user)
         db.session.commit()
 
+        # Prepare the email message
+        msg = Message(
+            subject='Welcome to The Melanated Sanctuary!',
+            recipients=[user.email],
+            sender='themelanatedsanctuary@gmail.com'
+        )
+
+        # Render the email body using Jinja2 templates
+        msg.body = render_template('email/welcome.txt', username=user.email, firstname=user.first_name, lastname = user.last_name)  # Plain text
+        msg.html = render_template('email/welcome.html', username=user.email, firstname=user.first_name, lastname = user.last_name)  # HTML
+
+        # Send the email
+        mail.send(msg)
+
     # Generate a JWT token for the user
     jwt_token = encode_token(user.id, user.is_admin)
 
-    # Store the user information in the session (Optional, for further backend session management)
+    # Store the user information in the session
     session['user_id'] = user.id
     session['user_name'] = user.first_name
 
