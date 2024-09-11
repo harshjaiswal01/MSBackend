@@ -215,6 +215,103 @@ paths:
           description: User name updated successfully
         '404':
           description: User not found
+  /forgot-password:
+    post:
+      tags:
+        - Users
+      summary: Forgot password
+      description: Send a 6-digit code to the user's email for password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Success message that the reset code has been sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reset-password:
+    post:
+      tags:
+        - Users
+      summary: Reset password
+      description: Verify the reset code and allow the user to set a new password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid request or expired reset code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /change-password:
+    put:
+      tags:
+        - Users
+      summary: Change password
+      description: Allow a logged-in user to change their password
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Bad Request or Invalid Password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /user_details:
     post:
       tags:
@@ -1565,3 +1662,62 @@ components:
         - day_of_pregnancy
         - title
         - description
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+      required:
+        - email
+      description: Request body for forgot password endpoint
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        reset_code:
+          type: integer
+          example: 123456
+        new_password:
+          type: string
+          format: password
+          example: newsecurepassword123
+      required:
+        - email
+        - reset_code
+        - new_password
+      description: Request body for resetting the password
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        old_password:
+          type: string
+          format: password
+          example: oldpassword123
+        new_password:
+          type: string
+          format: password
+          example: newsecurepassword123
+      required:
+        - old_password
+        - new_password
+      description: Request body for changing the password for a logged-in user
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Password reset successfully
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid or expired reset code

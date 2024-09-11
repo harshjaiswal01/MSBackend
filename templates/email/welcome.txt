@@ -1,0 +1,11 @@
+Welcome to The Melanated Sanctuary, {{ firstname }} {{ lastname }}!
+
+We're excited to have you join our community. Your account has been successfully created, and we can't wait for you to explore what we have to offer.
+
+Your username is: {{ username }}
+
+If you have any questions or need assistance, feel free to contact our support team at support@themelanatedsanctuary.com.
+
+Thank you for being a part of The Melanated Sanctuary!
+
+© 2024 The Melanated Sanctuary. All rights reserved.

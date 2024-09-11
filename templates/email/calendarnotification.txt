@@ -1,0 +1,15 @@
+Upcoming Event Reminder
+
+Hi {{ username }},
+
+We wanted to remind you of an upcoming event on your calendar:
+
+Event: {{ event_title }}
+Date: {{ event_date }}
+Description: {{ event_description }}
+
+Make sure to mark your calendar!
+
+If you have any questions, feel free to contact us at support@themelanatedsanctuary.com.
+
+© 2024 The Melanated Sanctuary. All rights reserved.

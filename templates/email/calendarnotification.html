@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Reminder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #FFFFFF;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1F1F1F;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header img {
+            width: 150px;
+            height: auto;
+        }
+        .content {
+            background-color: #2C2C2C;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #FFD700;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #CCCCCC;
+        }
+        .event-details {
+            background-color: #333333;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .event-details h2 {
+            font-size: 20px;
+            color: #FFD700;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+        }
+        a {
+            color: #FFD700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://ms-frontend-proto.onrender.com/Frame.png" alt="The Melanated Sanctuary Logo">
+        </div>
+        <div class="content">
+            <h1>Upcoming Event Reminder</h1>
+            <p>Hi {{ username }},</p>
+            <p>We wanted to remind you of an upcoming event on your calendar:</p>
+            <div class="event-details">
+                <h2>{{ event_title }}</h2>
+                <p><strong>Date:</strong> {{ event_date }}</p>
+                <p><strong>Description:</strong> {{ event_description }}</p>
+            </div>
+            <p>Make sure to mark your calendar!</p>
+            <p>If you have any questions, feel free to <a href="mailto:support@themelanatedsanctuary.com">contact us</a>.</p>
+        </div>
+        <div class="footer">
+            &copy; 2024 The Melanated Sanctuary. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

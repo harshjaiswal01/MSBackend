@@ -17,6 +17,7 @@ from routes.questionnaire_routes import questionnaire_bp
 from routes import reference_calendar_routes
 from utils.util import encode_token
 import os
+from extensions import mail
 
 # Swagger
 SWAGGER_URL = '/api/docs'
@@ -32,6 +33,9 @@ def create_app():
     CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
     db.init_app(app)
     ma.init_app(app)
+
+    # Mail
+    mail.init_app(app)
     
     # Initialize OAuth with the app
     oauth.init_app(app)

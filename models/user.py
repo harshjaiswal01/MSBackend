@@ -21,6 +21,7 @@ class User(Base):
     calendar_entries: Mapped[List["UserCalendar"]] = db.relationship("UserCalendar", back_populates="user", cascade="all, delete-orphan")
     vision_boards: Mapped[List["VisionBoard"]] = db.relationship("VisionBoard", back_populates="user", cascade="all, delete-orphan")
     user_vision_boards: Mapped[List["UserVisionBoard"]] = db.relationship("UserVisionBoard", back_populates="user", cascade="all, delete-orphan")
+    password_resets: Mapped[Optional["PasswordReset"]] = db.relationship("PasswordReset", back_populates="user", cascade="all, delete-orphan")
 
 
     def __init__(self, email, first_name, last_name, password=None, profile_picture=None, is_google_login=False):
