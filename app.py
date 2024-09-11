@@ -70,7 +70,7 @@ def google_login():
     return oauth.google.authorize_redirect(
         redirect_uri, 
         nonce=nonce,
-        scope=['openid', 'profile', 'email']  # Request email, profile, and openid
+        scope=['openid', 'profile', 'email'],  # Request email, profile, and openid
         prompt='consent'
     )
 
