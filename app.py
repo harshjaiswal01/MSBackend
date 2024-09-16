@@ -194,7 +194,6 @@ if __name__ == '__main__':
 
     # app.run(debug=True, host="0.0.0.0")
     app.run(debug=True, host="0.0.0.0", ssl_context=(
-        '/etc/ssl/certificate.crt',
-        '/etc/ssl/private.key',
-        '/etc/ssl/ca_bundle.crt'
+        '/etc/ssl/fullchain.pem',
+        '/etc/ssl/private.key'
     ))
