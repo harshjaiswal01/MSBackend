@@ -192,4 +192,9 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    app.run(debug=True, host="0.0.0.0")
+    # app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", ssl_context=(
+        '/etc/ssl/certificate.crt',
+        '/etc/ssl/private.key',
+        '/etc/ssl/ca_bundle.crt'
+    ))
