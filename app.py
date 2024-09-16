@@ -143,7 +143,8 @@ def google_auth_callback():
 
     # Store user information in the session
     session['user_id'] = user.id
-    session['user_name'] = user.first_name
+    session['first_name'] = user.first_name
+    session['last_name'] = user.last_name
 
     # Redirect to the dashboard with the JWT token
     return redirect(url_for('dashboard', token=jwt_token))
@@ -154,10 +155,8 @@ def dashboard():
     token = request.args.get('token')
     if not token:
         return redirect(url_for('index'))  # If no token, redirect to the index or login page
-    
-    # Optionally, validate or refresh the token here
 
-    return f"Welcome, {session['user_name']}! This is your dashboard. Your token is: {token}"
+    return f"Welcome, {session['first_name']} {session['last_name']}! This is your dashboard. Your token is: {token}"
 
 
 if __name__ == '__main__':

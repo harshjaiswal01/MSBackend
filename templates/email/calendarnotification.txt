@@ -10,6 +10,6 @@ Description: {{ event_description }}
 
 Make sure to mark your calendar!
 
-If you have any questions, feel free to contact us at support@themelanatedsanctuary.com.
+If you have any questions, feel free to contact us at support@melanatedsanctuary.com.
 
 © 2024 The Melanated Sanctuary. All rights reserved.
