@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import logging
 from flask import Flask, redirect, url_for, session, flash, request
 from flask_cors import CORS
