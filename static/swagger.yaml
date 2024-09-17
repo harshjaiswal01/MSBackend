@@ -1564,6 +1564,9 @@ components:
           type: string
           format: date-time
           example: "2024-09-09T12:00:00Z"
+        pic_url:
+          type: string
+          example: "http://pic_url.com"
 
     UserVisionBoard:
       type: object
