@@ -544,6 +544,9 @@ paths:
                 description:
                   type: string
                   example: "This is a vision board for my goals."
+                pic_url:
+                  type: string
+                  example: "http://pic_url.com"
       responses:
         201:
           description: Vision board created successfully
