@@ -625,6 +625,9 @@ paths:
                 description:
                   type: string
                   example: "Updated description for this board."
+                pic_url:
+                  type: string
+                  example: "http://pic_url.com"
       responses:
         200:
           description: Vision board updated successfully
