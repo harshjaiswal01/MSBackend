@@ -51,6 +51,7 @@ def update_vision_board(vision_board_id, data):
 
     vision_board.name = data.get('name', vision_board.name)
     vision_board.description = data.get('description', vision_board.description)
+    vision_board.pic_url = data.get('pic_url', vision_board.pic_url)
     db.session.commit()
     return vision_board_schema.dump(vision_board), None
 
