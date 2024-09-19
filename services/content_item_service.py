@@ -13,26 +13,70 @@ import random
 
 YOUTUBE_API_KEY = DevelopmentConfig.YOUTUBE_API_KEY
 
+# def fetch_metadata(content_url):
+#     # If the URL is from YouTube, use yt-dlp to extract metadata
+#     if "youtube.com" in content_url or "youtu.be" in content_url:
+#         return fetch_youtube_metadata(content_url)
+    
+#     # Otherwise, use BeautifulSoup to scrape general HTML
+#     response = requests.get(content_url, verify=False)
+#     soup = BeautifulSoup(response.text, 'html.parser')
+
+#     # Try to extract title from OpenGraph or title tag
+#     title_tag = soup.find('meta', property='og:title') or soup.find('title')
+#     title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
+    
+#     # Try to extract description from OpenGraph or meta description
+#     description_tag = soup.find('meta', property='og:description') or soup.find('meta', attrs={'name': 'description'})
+#     description = description_tag['content'] if description_tag else ''
+
+#     # Try to extract main image from OpenGraph
+#     main_image_tag = soup.find('meta', property='og:image')
+#     main_image_url = main_image_tag['content'] if main_image_tag else ''
+
+#     created_at = datetime.now()
+
+#     return {
+#         "title": title,
+#         "description": description,
+#         "main_image_url": main_image_url,
+#         "created_at": created_at
+#     }
+
 def fetch_metadata(content_url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+
     # If the URL is from YouTube, use yt-dlp to extract metadata
     if "youtube.com" in content_url or "youtu.be" in content_url:
         return fetch_youtube_metadata(content_url)
     
     # Otherwise, use BeautifulSoup to scrape general HTML
-    response = requests.get(content_url, verify=False)
+    response = requests.get(content_url, headers=headers, verify=False)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # Try to extract title from OpenGraph or title tag
-    title_tag = soup.find('meta', property='og:title') or soup.find('title')
+    # Try to extract title from OpenGraph, Twitter, or title tag
+    title_tag = (soup.find('meta', property='og:title') or 
+                 soup.find('meta', property='twitter:title') or 
+                 soup.find('title'))
     title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
     
-    # Try to extract description from OpenGraph or meta description
-    description_tag = soup.find('meta', property='og:description') or soup.find('meta', attrs={'name': 'description'})
+    # Try to extract description from OpenGraph, Twitter, or meta description
+    description_tag = (soup.find('meta', property='og:description') or 
+                       soup.find('meta', property='twitter:description') or 
+                       soup.find('meta', attrs={'name': 'description'}))
     description = description_tag['content'] if description_tag else ''
 
-    # Try to extract main image from OpenGraph
-    main_image_tag = soup.find('meta', property='og:image')
+    # Try to extract main image from OpenGraph or Twitter
+    main_image_tag = (soup.find('meta', property='og:image') or 
+                      soup.find('meta', property='twitter:image'))
     main_image_url = main_image_tag['content'] if main_image_tag else ''
+
+    # Fallback: Try to get the first <p> tag if no meta description is available
+    paragraph_tag = soup.find('p')
+    fallback_description = paragraph_tag.text if paragraph_tag else ''
+    description = description or fallback_description
 
     created_at = datetime.now()
 
@@ -105,7 +149,7 @@ def delete_content_item(content_item_id):
 
     db.session.delete(content_item)
     db.session.commit()
-    return {"message": "Content item deleted successfully"}
+    return {"message": "Content item deleted successfully"}, None
 
 def get_content_items_for_vision_board(vision_board_id, page, per_page):
     query = db.session.query(ContentItem).filter_by(vision_board_id=vision_board_id)
