@@ -22,7 +22,8 @@ def create_vision_board(data, user_id=None):
         name=data['name'], 
         is_custom=is_custom, 
         created_by=user_id if not is_admin else None,  # Admin-created boards have no user assigned
-        description=data.get('description', None)
+        description=data.get('description', None),
+        pic_url=data.get('pic_url', None)
     )
     db.session.add(vision_board)
     db.session.commit()
