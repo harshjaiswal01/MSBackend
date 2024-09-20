@@ -82,6 +82,23 @@ def register_user(user_data):
 #     token = encode_token(user.id, user.is_admin)
 #     return token, None
 
+# def login_user(credentials):
+#     try:
+#         validated_data = user_login_schema.load(credentials)
+#     except ValidationError as err:
+#         return None, err.messages
+
+#     user = db.session.query(User).filter_by(email=validated_data['email']).first()
+#     if not user or not check_password_hash(user.password, validated_data['password']):
+#         return None, {"error": "Invalid email or password"}
+
+#     token = encode_token(user.id, user.is_admin)
+#     return {
+#         "token": token,
+#         "first_name": user.first_name,
+#         "last_name": user.last_name
+#     }, None
+
 def login_user(credentials):
     try:
         validated_data = user_login_schema.load(credentials)
@@ -92,12 +109,17 @@ def login_user(credentials):
     if not user or not check_password_hash(user.password, validated_data['password']):
         return None, {"error": "Invalid email or password"}
 
-    token = encode_token(user.id, user.is_admin)
+    # Generate both tokens
+    access_token = encode_token(user.id, user.is_admin)
+    refresh_token = encode_token(user.id, user.is_admin, refresh=True)
+
     return {
-        "token": token,
+        "token": access_token,
+        "refresh_token": refresh_token,
         "first_name": user.first_name,
         "last_name": user.last_name
     }, None
+
 
 def update_user_name(user_id, name_data):
     try:

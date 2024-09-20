@@ -7,24 +7,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from flask import current_app
 
-def encode_token(user_id, is_admin):
+def encode_token(user_id, is_admin, refresh=False):
     """
-    Generates the JWT token
+    Generate a JWT token. Use 'refresh' flag to distinguish tokens by expiration.
     """
-    try:
-        payload = {
-            'exp': datetime.utcnow() + timedelta(days=1),  # Token expires in 1 day
-            'iat': datetime.utcnow(),
-            'sub': user_id,
-            'is_admin': is_admin
-        }
-        return jwt.encode(
-            payload,
-            current_app.config.get('SECRET_KEY'),
-            algorithm='HS256'
-        )
-    except Exception as e:
-        return None
+    expiration = timedelta(days=7) if refresh else timedelta(minutes=90)  # Access token expires in 90 mins, refresh in 7 days
+    payload = {
+        'exp': datetime.utcnow() + expiration,
+        'iat': datetime.utcnow(),
+        'sub': user_id,
+        'is_admin': is_admin
+    }
+    return jwt.encode(payload, current_app.config.get('SECRET_KEY'), algorithm='HS256')
+
 
 def decode_token(token):
     """

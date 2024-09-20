@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from services import user_service
-from utils.util import token_required, admin_required
+from utils.util import token_required, admin_required, encode_token, decode_token
 from database import db
 from models.user import User
 
@@ -76,3 +76,19 @@ def change_password(user_id):
     if error:
         return jsonify(error), 400
     return jsonify(response), 200
+
+@token_required
+def refresh_token():
+    data = request.get_json()
+    refresh_token = data.get('refresh_token')
+
+    if not refresh_token:
+        return jsonify({"error": "Refresh token is required"}), 400
+
+    user_id, is_admin = decode_token(refresh_token)
+    if not user_id:
+        return jsonify({"error": "Invalid refresh token"}), 401
+
+    new_access_token = encode_token(user_id, is_admin)  # Issue new access token
+
+    return jsonify({"access_token": new_access_token}), 200

@@ -13,3 +13,4 @@ user_bp.route('/users/<int:id>/update-name', methods=['PUT'])(user_controller.up
 user_bp.route('/forgot-password', methods=['POST'])(user_controller.forgot_password)
 user_bp.route('/reset-password', methods=['POST'])(user_controller.reset_password)
 user_bp.route('/change-password', methods=['PUT'])(user_controller.change_password)
+user_bp.route('/refresh-token', methods=['POST'])(user_controller.refresh_token)
