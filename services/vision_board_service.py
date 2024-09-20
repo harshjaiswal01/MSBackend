@@ -56,6 +56,18 @@ def update_vision_board(vision_board_id, data):
     return vision_board_schema.dump(vision_board), None
 
 def delete_user_vision_board(user_id, vision_board_id):
+
+    user = db.session.query(User).filter_by(id=user_id).first()
+
+    # Check if the user is an admin based on the 'is_admin' flag or their role
+    is_admin = user.is_admin or (user.role and user.role.name == 'admin')
+
+    if is_admin:
+        vision_board = db.session.query(VisionBoard).filter_by(id=vision_board_id).first()
+        db.session.delete(vision_board)
+        db.session.commit()
+        return {"message": "Vision board deleted successfully"}, None
+
     # Check if the board was created by the user and is custom
     vision_board = db.session.query(VisionBoard).filter_by(id=vision_board_id, created_by=user_id, is_custom=True).first()
     if not vision_board:
