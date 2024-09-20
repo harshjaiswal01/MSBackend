@@ -196,6 +196,6 @@ if __name__ == '__main__':
 
     # app.run(debug=True, host="0.0.0.0")
     app.run(debug=False, host="0.0.0.0", ssl_context=(
-        '/etc/ssl/fullchain.pem',
-        '/etc/ssl/private.key'
+        '/home/ubuntu/MSBackend/etc/ssl/fullchain.pem',
+        '/home/ubuntu/MSBackend/etc/ssl/private.key'
     ))
