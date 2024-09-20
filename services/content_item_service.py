@@ -10,38 +10,11 @@ import yt_dlp
 from config import DevelopmentConfig
 from slugify import slugify
 import random
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 
 YOUTUBE_API_KEY = DevelopmentConfig.YOUTUBE_API_KEY
-
-# def fetch_metadata(content_url):
-#     # If the URL is from YouTube, use yt-dlp to extract metadata
-#     if "youtube.com" in content_url or "youtu.be" in content_url:
-#         return fetch_youtube_metadata(content_url)
-    
-#     # Otherwise, use BeautifulSoup to scrape general HTML
-#     response = requests.get(content_url, verify=False)
-#     soup = BeautifulSoup(response.text, 'html.parser')
-
-#     # Try to extract title from OpenGraph or title tag
-#     title_tag = soup.find('meta', property='og:title') or soup.find('title')
-#     title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
-    
-#     # Try to extract description from OpenGraph or meta description
-#     description_tag = soup.find('meta', property='og:description') or soup.find('meta', attrs={'name': 'description'})
-#     description = description_tag['content'] if description_tag else ''
-
-#     # Try to extract main image from OpenGraph
-#     main_image_tag = soup.find('meta', property='og:image')
-#     main_image_url = main_image_tag['content'] if main_image_tag else ''
-
-#     created_at = datetime.now()
-
-#     return {
-#         "title": title,
-#         "description": description,
-#         "main_image_url": main_image_url,
-#         "created_at": created_at
-#     }
 
 def fetch_metadata(content_url):
     headers = {
@@ -52,9 +25,13 @@ def fetch_metadata(content_url):
     if "youtube.com" in content_url or "youtu.be" in content_url:
         return fetch_youtube_metadata(content_url)
     
-    # Otherwise, use BeautifulSoup to scrape general HTML
-    response = requests.get(content_url, headers=headers, verify=False)
-    soup = BeautifulSoup(response.text, 'html.parser')
+    try:
+        # Try fetching with requests first for simpler websites
+        response = requests.get(content_url, headers=headers, verify=False)
+        soup = BeautifulSoup(response.text, 'html.parser')
+    except:
+        # Fall back to Selenium if requests fail (e.g., for JS-heavy websites)
+        soup = fetch_dynamic_content(content_url)
 
     # Try to extract title from OpenGraph, Twitter, or title tag
     title_tag = (soup.find('meta', property='og:title') or 
@@ -86,6 +63,102 @@ def fetch_metadata(content_url):
         "main_image_url": main_image_url,
         "created_at": created_at
     }
+
+def fetch_dynamic_content(url):
+    # Setup Chrome options for headless browsing
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+
+    # Path to your ChromeDriver (ensure it's installed)
+    service = Service('/usr/local/bin/chromedriver')  # Update this with your chromedriver path
+    driver = webdriver.Chrome(service=service, options=options)
+    
+    # Load the webpage
+    driver.get(url)
+    
+    # Get the full HTML of the page (including JS-rendered content)
+    page_source = driver.page_source
+    
+    # Close the browser session
+    driver.quit()
+    
+    return BeautifulSoup(page_source, 'html.parser')
+
+# def fetch_metadata(content_url):
+#     # If the URL is from YouTube, use yt-dlp to extract metadata
+#     if "youtube.com" in content_url or "youtu.be" in content_url:
+#         return fetch_youtube_metadata(content_url)
+    
+#     # Otherwise, use BeautifulSoup to scrape general HTML
+#     response = requests.get(content_url, verify=False)
+#     soup = BeautifulSoup(response.text, 'html.parser')
+
+#     # Try to extract title from OpenGraph or title tag
+#     title_tag = soup.find('meta', property='og:title') or soup.find('title')
+#     title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
+    
+#     # Try to extract description from OpenGraph or meta description
+#     description_tag = soup.find('meta', property='og:description') or soup.find('meta', attrs={'name': 'description'})
+#     description = description_tag['content'] if description_tag else ''
+
+#     # Try to extract main image from OpenGraph
+#     main_image_tag = soup.find('meta', property='og:image')
+#     main_image_url = main_image_tag['content'] if main_image_tag else ''
+
+#     created_at = datetime.now()
+
+#     return {
+#         "title": title,
+#         "description": description,
+#         "main_image_url": main_image_url,
+#         "created_at": created_at
+#     }
+
+# def fetch_metadata(content_url):
+#     headers = {
+#         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+#     }
+
+#     # If the URL is from YouTube, use yt-dlp to extract metadata
+#     if "youtube.com" in content_url or "youtu.be" in content_url:
+#         return fetch_youtube_metadata(content_url)
+    
+#     # Otherwise, use BeautifulSoup to scrape general HTML
+#     response = requests.get(content_url, headers=headers, verify=False)
+#     soup = BeautifulSoup(response.text, 'html.parser')
+
+#     # Try to extract title from OpenGraph, Twitter, or title tag
+#     title_tag = (soup.find('meta', property='og:title') or 
+#                  soup.find('meta', property='twitter:title') or 
+#                  soup.find('title'))
+#     title = title_tag['content'] if title_tag and title_tag.has_attr('content') else title_tag.text if title_tag else ''
+    
+#     # Try to extract description from OpenGraph, Twitter, or meta description
+#     description_tag = (soup.find('meta', property='og:description') or 
+#                        soup.find('meta', property='twitter:description') or 
+#                        soup.find('meta', attrs={'name': 'description'}))
+#     description = description_tag['content'] if description_tag else ''
+
+#     # Try to extract main image from OpenGraph or Twitter
+#     main_image_tag = (soup.find('meta', property='og:image') or 
+#                       soup.find('meta', property='twitter:image'))
+#     main_image_url = main_image_tag['content'] if main_image_tag else ''
+
+#     # Fallback: Try to get the first <p> tag if no meta description is available
+#     paragraph_tag = soup.find('p')
+#     fallback_description = paragraph_tag.text if paragraph_tag else ''
+#     description = description or fallback_description
+
+#     created_at = datetime.now()
+
+#     return {
+#         "title": title,
+#         "description": description,
+#         "main_image_url": main_image_url,
+#         "created_at": created_at
+#     }
 
 def fetch_youtube_metadata(youtube_url):
     video_id = youtube_url.split("v=")[-1]

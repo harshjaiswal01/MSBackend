@@ -195,7 +195,7 @@ if __name__ == '__main__':
             print(f"An error occurred: {e}")
 
     # app.run(debug=True, host="0.0.0.0")
-    app.run(debug=True, host="0.0.0.0", ssl_context=(
+    app.run(debug=False, host="0.0.0.0", ssl_context=(
         '/etc/ssl/fullchain.pem',
         '/etc/ssl/private.key'
     ))
