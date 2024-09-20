@@ -77,7 +77,7 @@ def change_password(user_id):
         return jsonify(error), 400
     return jsonify(response), 200
 
-@token_required
+# @token_required
 def refresh_token():
     data = request.get_json()
     refresh_token = data.get('refresh_token')
